@@ -8,7 +8,6 @@ import (
 	"github.com/inkeliz-technologies/ecs"
 	"github.com/inkeliz-technologies/tango"
 	"github.com/inkeliz-technologies/tango/math32"
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 const (
@@ -249,15 +248,15 @@ func (cam *CameraSystem) rotate(value float32) {
 }
 
 func (cam *CameraSystem) moveToX(location float32) {
-	cam.x = mgl32.Clamp(location*tango.GetGlobalScale().X, CameraBounds.Min.X*tango.GetGlobalScale().X, CameraBounds.Max.X*tango.GetGlobalScale().X)
+	cam.x = math32.Clamp(location*tango.GetGlobalScale().X, CameraBounds.Min.X*tango.GetGlobalScale().X, CameraBounds.Max.X*tango.GetGlobalScale().X)
 }
 
 func (cam *CameraSystem) moveToY(location float32) {
-	cam.y = mgl32.Clamp(location*tango.GetGlobalScale().Y, CameraBounds.Min.Y*tango.GetGlobalScale().Y, CameraBounds.Max.Y*tango.GetGlobalScale().Y)
+	cam.y = math32.Clamp(location*tango.GetGlobalScale().Y, CameraBounds.Min.Y*tango.GetGlobalScale().Y, CameraBounds.Max.Y*tango.GetGlobalScale().Y)
 }
 
 func (cam *CameraSystem) zoomTo(zoomLevel float32) {
-	cam.z = mgl32.Clamp(zoomLevel, MinZoom, MaxZoom)
+	cam.z = math32.Clamp(zoomLevel, MinZoom, MaxZoom)
 }
 
 func (cam *CameraSystem) rotateTo(rotation float32) {
