@@ -222,7 +222,7 @@ func Run(o RunOptions, defaultScene Scene) {
 			SetScene(defaultScene, true)
 		}
 	} else {
-		CreateWindow(opts.Title, opts.Width, opts.Height, opts.Fullscreen, opts.MSAA)
+		opts.CreateWindow()
 		defer DestroyWindow()
 
 		if !opts.NoRun {

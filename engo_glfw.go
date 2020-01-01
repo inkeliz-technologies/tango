@@ -37,7 +37,7 @@ func init() {
 }
 
 // CreateWindow sets up the GLFW window and prepares the OpenGL surface for rendering
-func CreateWindow(title string, width, height int, fullscreen bool, msaa int) {
+func (opts *RunOptions) CreateWindow() {
 	CurrentBackEnd = BackEndGLFW
 	err := glfw.Init()
 	if err != nil {
@@ -70,50 +70,51 @@ func CreateWindow(title string, width, height int, fullscreen bool, msaa int) {
 		}
 	}
 
-	if fullscreen {
-		width = mode.Width
-		height = mode.Height
+	if opts.Fullscreen {
+		opts.Width, opts.Height = mode.Width, mode.Height
 		glfw.WindowHint(glfw.Decorated, 0)
 	} else {
 		monitor = nil
 	}
 
-	gameWidth = float32(width)
-	gameHeight = float32(height)
+	gameWidth, gameHeight = float32(opts.Width), float32(opts.Height)
 
 	if opts.HeadlessMode {
 		glfw.WindowHint(glfw.Visible, glfw.False)
 	}
 	if opts.NotResizable {
 		glfw.WindowHint(glfw.Resizable, glfw.False)
+		if opts.Fullscreen {
+			glfw.WindowHint(glfw.AutoIconify, 0)
+		}
 	}
 
 	glfw.WindowHint(glfw.ContextVersionMajor, 2)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 
-	glfw.WindowHint(glfw.Samples, msaa)
+	glfw.WindowHint(glfw.Samples, opts.MSAA)
 
 	if opts.HeadlessMode {
 		Gl = gl.NewContext()
 		return
 	}
 
-	Window, err = glfw.CreateWindow(width, height, title, monitor, nil)
+	Window, err = glfw.CreateWindow(opts.Width, opts.Height, opts.Title, monitor, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	Window.MakeContextCurrent()
 
-	if !fullscreen {
-		Window.SetPos((mode.Width-width)/2, (mode.Height-height)/2)
+	if !opts.Fullscreen {
+		Window.SetPos((mode.Width-opts.Width)/2, (mode.Height-opts.Height)/2)
 	}
 
 	SetVSync(opts.VSync)
 
 	Gl = gl.NewContext()
 
-	width, height = Window.GetSize()
+	width, height := Window.GetSize()
 	windowWidth, windowHeight = float32(width), float32(height)
 
 	fw, fh := Window.GetFramebufferSize()
@@ -126,7 +127,7 @@ func CreateWindow(title string, width, height int, fullscreen bool, msaa int) {
 	Window.SetFramebufferSizeCallback(func(Window *glfw.Window, w, h int) {
 		Gl.Viewport(0, 0, w, h)
 		width, height = Window.GetSize()
-		windowWidth, windowHeight = float32(width), float32(width)
+		windowWidth, windowHeight = float32(width), float32(height)
 
 		oldCanvasW, oldCanvasH := canvasWidth, canvasHeight
 
