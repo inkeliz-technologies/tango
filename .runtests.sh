@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 
 echo "Using GOPATH=$GOPATH"
-echo "Getting github.com/EngoEngine/engo using 'go get'"
+echo "Getting github.com/inkeliz-technologies/tango using 'go get'"
 go get -t -v ./... || exit 1
 
 # These can fail without us minding it
-blacklist="github.com/EngoEngine/engo/demos/demoutils"
+blacklist="github.com/inkeliz-technologies/tango/demos/demoutils"
 
 if [ "$TEST_TYPE" == "linux_test" ]
 then
-    echo "Testing github.com/EngoEngine/engo using coveralls"
+    echo "Testing github.com/inkeliz-technologies/tango using coveralls"
     $HOME/gopath/bin/goveralls -service=travis-ci
 
-    echo "Testing and benchmarking github.com/EngoEngine/engo"
+    echo "Testing and benchmarking github.com/inkeliz-technologies/tango"
     go test -v -bench=. ./... || exit 1
 
     echo "Checking for unnecessary conversions using unconvert"
-    unconvert -v github.com/EngoEngine/engo
+    unconvert -v github.com/inkeliz-technologies/tango
 elif [ "$TEST_TYPE" == "linux_build" ]
 then
     for dir in `pwd`/demos/*/
@@ -73,7 +73,7 @@ then
     done
 elif [ "$TEST_TYPE" == "android_test" ]
 then
-    echo "Skipping tests for github.com/EngoEngine/engo using 'gomobile' (no tools exist yet)"
+    echo "Skipping tests for github.com/inkeliz-technologies/tango using 'gomobile' (no tools exist yet)"
 elif [ "$TEST_TYPE" == "android_build" ]
 then
     for dir in `pwd`/demos/*/
@@ -100,7 +100,7 @@ then
 elif [ "$TEST_TYPE" == "traffic_manager" ]
 then
     branches='01-hello-world 02-first-system 03-camera-movement 04-hud 05-tilemaps 06-spritesheets-and-automated-city-building 07-hud-text'
-    cd $HOME/gopath/src/github.com/EngoEngine/TrafficManager
+    cd $HOME/gopath/src/github.com/inkeliz-technologies/TrafficManager
     for branch in $branches
     do
         echo "Verifying ${branch} ..."

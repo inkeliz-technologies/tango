@@ -1,12 +1,12 @@
 # Demos
 
-Each of these demos showcases a small concept or feature of `engo`, or even a more sizable sample game. They have been sorted into categories below.
+Each of these demos showcases a small concept or feature of `tango`, or even a more sizable sample game. They have been sorted into categories below.
 
 ## Conceptual
 
 ### [Headless](headless)
 
-Run `engo` without a graphical display. Useful for servers and testing.
+Run `tango` without a graphical display. Useful for servers and testing.
 
 ### [Exit](exit)
 
@@ -94,7 +94,7 @@ It demonstrates how one can rotate the camera, using the middle mouse button.
 
 ### [Pong](pong)
 
-Engo implementation of the original pong game
+tango implementation of the original pong game
 
 
 ## Input

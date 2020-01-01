@@ -3,9 +3,9 @@ package common
 import (
 	"log"
 
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/math"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/math32"
+	"github.com/inkeliz-technologies/tango/gl"
 )
 
 // Spritesheet is a class that stores a set of tiles from a file, used by tilemaps and animations
@@ -18,7 +18,7 @@ type Spritesheet struct {
 
 // SpriteRegion holds the position data for each sprite on the sheet
 type SpriteRegion struct {
-	Position      engo.Point
+	Position      tango.Point
 	Width, Height int
 }
 
@@ -37,7 +37,7 @@ func NewAsymmetricSpritesheetFromTexture(tr *TextureResource, spriteRegions []Sp
 // NewAsymmetricSpritesheetFromFile creates a new AsymmetricSpriteSheet from a
 // file name. The data provided is the location and size of the sprites
 func NewAsymmetricSpritesheetFromFile(textureName string, spriteRegions []SpriteRegion) *Spritesheet {
-	res, err := engo.Files.Resource(textureName)
+	res, err := tango.Files.Resource(textureName)
 	if err != nil {
 		log.Println("[WARNING] [NewAsymmetricSpritesheetFromFile]: Received error:", err)
 		return nil
@@ -59,9 +59,9 @@ func NewSpritesheetFromTexture(tr *TextureResource, cellWidth, cellHeight int) *
 }
 
 // NewSpritesheetFromFile is a simple handler for creating a new spritesheet from a file
-// textureName is the name of a texture already preloaded with engo.Files.Add
+// textureName is the name of a texture already preloaded with tango.Files.Add
 func NewSpritesheetFromFile(textureName string, cellWidth, cellHeight int) *Spritesheet {
-	res, err := engo.Files.Resource(textureName)
+	res, err := tango.Files.Resource(textureName)
 	if err != nil {
 		log.Println("[WARNING] [NewSpritesheetFromFile]: Received error:", err)
 		return nil
@@ -88,7 +88,7 @@ func NewSpritesheetWithBorderFromTexture(tr *TextureResource, cellWidth, cellHei
 // This sheet has sprites of a uniform width and height, but also have borders around
 // each sprite to prevent bleeding over
 func NewSpritesheetWithBorderFromFile(textureName string, cellWidth, cellHeight, borderWidth, borderHeight int) *Spritesheet {
-	res, err := engo.Files.Resource(textureName)
+	res, err := tango.Files.Resource(textureName)
 	if err != nil {
 		log.Println("[WARNING] [NewSpritesheetWithBorderFromFile]: Received error:", err)
 		return nil
@@ -114,12 +114,12 @@ func (s *Spritesheet) Cell(index int) Texture {
 		id:     s.texture,
 		width:  float32(cell.Width),
 		height: float32(cell.Height),
-		viewport: engo.AABB{
-			Min: engo.Point{
+		viewport: tango.AABB{
+			Min: tango.Point{
 				X: cell.Position.X / s.width,
 				Y: cell.Position.Y / s.height,
 			},
-			Max: engo.Point{
+			Max: tango.Point{
 				X: (cell.Position.X + float32(cell.Width)) / s.width,
 				Y: (cell.Position.Y + float32(cell.Height)) / s.height,
 			},
@@ -176,10 +176,10 @@ func (s Spritesheet) Height() float32 {
 func generateSymmetricSpriteRegions(totalWidth, totalHeight float32, cellWidth, cellHeight, borderWidth, borderHeight int) []SpriteRegion {
 	var spriteRegions []SpriteRegion
 
-	for y := 0; y <= int(math.Floor(totalHeight-1)); y += cellHeight + borderHeight {
-		for x := 0; x <= int(math.Floor(totalWidth-1)); x += cellWidth + borderWidth {
+	for y := 0; y <= int(math32.Floor(totalHeight-1)); y += cellHeight + borderHeight {
+		for x := 0; x <= int(math32.Floor(totalWidth-1)); x += cellWidth + borderWidth {
 			spriteRegion := SpriteRegion{
-				Position: engo.Point{X: float32(x), Y: float32(y)},
+				Position: tango.Point{X: float32(x), Y: float32(y)},
 				Width:    cellWidth,
 				Height:   cellHeight,
 			}

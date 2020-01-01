@@ -7,9 +7,9 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 var fnt *common.Font
@@ -30,13 +30,13 @@ type DefaultScene struct{}
 func (*DefaultScene) Type() string { return "Default Scene" }
 
 func (*DefaultScene) Preload() {
-	err := engo.Files.Load("Roboto-Regular.ttf")
+	err := tango.Files.Load("Roboto-Regular.ttf")
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -69,7 +69,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 		Font: fnt,
 		Text: "RMB: (0, 0)",
 	}
-	label2.SpaceComponent.Position = engo.Point{0, 150}
+	label2.SpaceComponent.Position = tango.Point{0, 150}
 	label2.SetShader(common.HUDShader)
 	label2.ClickComponent.label = "right click"
 
@@ -131,20 +131,20 @@ func (c *ClickSystem) Update(dt float32) {
 	if c.right == justPressed {
 		c.right = down
 	}
-	if engo.Input.Mouse.Action == engo.Press {
-		if engo.Input.Mouse.Button == engo.MouseButtonLeft {
+	if tango.Input.Mouse.Action == tango.Press {
+		if tango.Input.Mouse.Button == tango.MouseButtonLeft {
 			if c.left == up {
 				c.left = justPressed
 			}
-		} else if engo.Input.Mouse.Button == engo.MouseButtonRight {
+		} else if tango.Input.Mouse.Button == tango.MouseButtonRight {
 			if c.right == up {
 				c.right = justPressed
 			}
 		}
-	} else if engo.Input.Mouse.Action == engo.Release {
-		if engo.Input.Mouse.Button == engo.MouseButtonLeft {
+	} else if tango.Input.Mouse.Action == tango.Release {
+		if tango.Input.Mouse.Button == tango.MouseButtonLeft {
 			c.left = up
-		} else if engo.Input.Mouse.Button == engo.MouseButtonRight {
+		} else if tango.Input.Mouse.Button == tango.MouseButtonRight {
 			c.right = up
 		}
 	}
@@ -154,7 +154,7 @@ func (c *ClickSystem) Update(dt float32) {
 		switch e.ClickComponent.label {
 		case "left click":
 			if c.left == justPressed {
-				txt := "LMB: (" + strconv.FormatFloat(float64(engo.Input.Mouse.X), 'f', 1, 32) + ", " + strconv.FormatFloat(float64(engo.Input.Mouse.Y), 'f', 1, 32) + ")"
+				txt := "LMB: (" + strconv.FormatFloat(float64(tango.Input.Mouse.X), 'f', 1, 32) + ", " + strconv.FormatFloat(float64(tango.Input.Mouse.Y), 'f', 1, 32) + ")"
 				e.RenderComponent.Drawable.Close()
 				e.RenderComponent.Drawable = common.Text{
 					Font: fnt,
@@ -163,7 +163,7 @@ func (c *ClickSystem) Update(dt float32) {
 			}
 		case "right click":
 			if c.right == justPressed {
-				txt := "RMB: (" + strconv.FormatFloat(float64(engo.Input.Mouse.X), 'f', 1, 32) + ", " + strconv.FormatFloat(float64(engo.Input.Mouse.Y), 'f', 1, 32) + ")"
+				txt := "RMB: (" + strconv.FormatFloat(float64(tango.Input.Mouse.X), 'f', 1, 32) + ", " + strconv.FormatFloat(float64(tango.Input.Mouse.Y), 'f', 1, 32) + ")"
 				e.RenderComponent.Drawable.Close()
 				e.RenderComponent.Drawable = common.Text{
 					Font: fnt,
@@ -175,7 +175,7 @@ func (c *ClickSystem) Update(dt float32) {
 }
 
 func main() {
-	engo.Run(engo.RunOptions{
+	tango.Run(tango.RunOptions{
 		Title:  "Mouse Click Demo",
 		Width:  1024,
 		Height: 640,

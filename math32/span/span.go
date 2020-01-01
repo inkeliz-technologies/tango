@@ -1,7 +1,7 @@
 package span
 
 import (
-	engospan "github.com/EngoEngine/math/span"
+	"github.com/EngoEngine/math/span"
 )
 
 // Span represents an interval.
@@ -9,12 +9,12 @@ type Span struct {
 	Min, Max float32
 }
 
-func toIntern(x engospan.Span) Span {
+func toIntern(x span.Span) Span {
 	return Span{Min: x.Min, Max: x.Max}
 }
 
-func toExtern(i Span) engospan.Span {
-	return engospan.Span{Min: i.Min, Max: i.Max}
+func toExtern(i Span) span.Span {
+	return span.Span{Min: i.Min, Max: i.Max}
 }
 
 // Add 2 span togheter
@@ -42,5 +42,5 @@ func (s0 Span) Div(s1 Span) Span {
 
 // Abs return the absolute of the given span.
 func Abs(s Span) Span {
-	return toIntern(engospan.Abs(toExtern(s)))
+	return toIntern(span.Abs(toExtern(s)))
 }

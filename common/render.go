@@ -1,9 +1,9 @@
 package common
 
 import (
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/gl"
 	"image/color"
 	"sort"
 	"sync"
@@ -60,8 +60,8 @@ const (
 type RenderComponent struct {
 	// Hidden is used to prevent drawing by OpenGL
 	Hidden bool
-	// Scale is the scale at which to render, in the X and Y axis. Not defining Scale, will default to engo.Point{1, 1}
-	Scale engo.Point
+	// Scale is the scale at which to render, in the X and Y axis. Not defining Scale, will default to tango.Point{1, 1}
+	Scale tango.Point
 	// Color defines how much of the color-components of the texture get used
 	Color color.Color
 	// Drawable refers to the Texture that should be drawn
@@ -92,7 +92,7 @@ type RenderComponent struct {
 // SetShader sets the shader used by the RenderComponent.
 func (r *RenderComponent) SetShader(s Shader) {
 	r.shader = s
-	engo.Mailbox.Dispatch(&renderChangeMessage{})
+	tango.Mailbox.Dispatch(&renderChangeMessage{})
 }
 
 func (r *RenderComponent) ensureShader() {
@@ -126,19 +126,19 @@ func (r *RenderComponent) Shader() Shader {
 // lower ones if they overlap.
 func (r *RenderComponent) SetZIndex(index float32) {
 	r.zIndex = index
-	engo.Mailbox.Dispatch(&renderChangeMessage{})
+	tango.Mailbox.Dispatch(&renderChangeMessage{})
 }
 
 // SetMinFilter sets the ZoomFilter used for minimizing the RenderComponent
 func (r *RenderComponent) SetMinFilter(z ZoomFilter) {
 	r.minFilter = z
-	engo.Mailbox.Dispatch(renderChangeMessage{})
+	tango.Mailbox.Dispatch(renderChangeMessage{})
 }
 
 // SetMagFilter sets the ZoomFilter used for magnifying the RenderComponent
 func (r *RenderComponent) SetMagFilter(z ZoomFilter) {
 	r.magFilter = z
-	engo.Mailbox.Dispatch(renderChangeMessage{})
+	tango.Mailbox.Dispatch(renderChangeMessage{})
 }
 
 type renderEntity struct {
@@ -219,20 +219,20 @@ func (rs *RenderSystem) New(w *ecs.World) {
 	rs.world = w
 	rs.ids = make(map[uint64]struct{})
 
-	engo.Mailbox.Listen("NewCameraMessage", func(engo.Message) {
+	tango.Mailbox.Listen("NewCameraMessage", func(tango.Message) {
 		rs.newCamera = true
 	})
 
 	addCameraSystemOnce(w)
 
-	if !engo.Headless() {
+	if !tango.Headless() {
 		if err := initShaders(w); err != nil {
 			panic(err)
 		}
-		engo.Gl.Enable(engo.Gl.MULTISAMPLE)
+		tango.Gl.Enable(tango.Gl.MULTISAMPLE)
 	}
 
-	engo.Mailbox.Listen("renderChangeMessage", func(engo.Message) {
+	tango.Mailbox.Listen("renderChangeMessage", func(tango.Message) {
 		rs.sortingNeeded = true
 	})
 }
@@ -329,7 +329,7 @@ func (rs *RenderSystem) Remove(basic ecs.BasicEntity) {
 
 // Update draws the entities in the RenderSystem to the OpenGL Surface.
 func (rs *RenderSystem) Update(dt float32) {
-	if engo.Headless() {
+	if tango.Headless() {
 		return
 	}
 
@@ -343,7 +343,7 @@ func (rs *RenderSystem) Update(dt float32) {
 		rs.newCamera = false
 	}
 
-	engo.Gl.Clear(engo.Gl.COLOR_BUFFER_BIT)
+	tango.Gl.Clear(tango.Gl.COLOR_BUFFER_BIT)
 
 	preparedCullingShaders := make(map[CullingShader]struct{})
 	var cullingShader CullingShader // current culling shader
@@ -388,7 +388,7 @@ func (rs *RenderSystem) Update(dt float32) {
 
 		// Setting default scale to 1
 		if e.RenderComponent.Scale.X == 0 && e.RenderComponent.Scale.Y == 0 {
-			e.RenderComponent.Scale = engo.Point{X: 1, Y: 1}
+			e.RenderComponent.Scale = tango.Point{X: 1, Y: 1}
 		}
 
 		// Setting default to white
@@ -406,9 +406,9 @@ func (rs *RenderSystem) Update(dt float32) {
 
 // SetBackground sets the OpenGL ClearColor to the provided color.
 func SetBackground(c color.Color) {
-	if !engo.Headless() {
+	if !tango.Headless() {
 		r, g, b, a := c.RGBA()
 
-		engo.Gl.ClearColor(float32(r)/0xffff, float32(g)/0xffff, float32(b)/0xffff, float32(a)/0xffff)
+		tango.Gl.ClearColor(float32(r)/0xffff, float32(g)/0xffff, float32(b)/0xffff, float32(a)/0xffff)
 	}
 }

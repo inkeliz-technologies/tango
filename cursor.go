@@ -1,4 +1,4 @@
-package engo
+package tango
 
 // Cursor is a reference to standard cursors, to be used in conjunction with `SetCursor`. What they look like, is
 // different for each platform.

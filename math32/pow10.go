@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Pow10 returns 10**e, the base-10 exponential of e.
@@ -10,5 +10,5 @@ import (
 //	Pow10(e) = +Inf for e > 309
 //	Pow10(e) = 0 for e < -324
 func Pow10(e int) float32 {
-	return engomath.Pow10(e)
+	return math.Pow10(e)
 }

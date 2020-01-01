@@ -1,4 +1,4 @@
-package engo
+package tango
 
 import (
 	"time"
@@ -23,7 +23,7 @@ var theTimer timer = realTime{}
 // The amound of nano seconds in a second.
 const secondsInNano int64 = 1000000000
 
-// A Clock is a measurement built in `engo` to measure the actual frames per seconds (framerate).
+// A Clock is a measurement built in `tango` to measure the actual frames per seconds (framerate).
 type Clock struct {
 	counter   uint32
 	perSecond uint32

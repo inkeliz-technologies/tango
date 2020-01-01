@@ -1,22 +1,22 @@
 package main
 
 import (
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
 
 func (*DefaultScene) Preload() {
-	err := engo.Files.Load("blendmap.png", "grass.png", "mud.png", "path.png", "flowers.png")
+	err := tango.Files.Load("blendmap.png", "grass.png", "mud.png", "path.png", "flowers.png")
 	if err != nil {
 		panic(err)
 	}
 }
 
 // Setup is called before the main loop is started
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	rs := new(common.RenderSystem)
@@ -34,7 +34,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 		ecs.NewBasic(),
 		common.SpaceComponent{},
 		common.RenderComponent{
-			Scale:    engo.Point{0.75, 0.75},
+			Scale:    tango.Point{0.75, 0.75},
 			Drawable: common.Blendmap{pack, blendMap},
 		},
 	}
@@ -51,11 +51,11 @@ type sampleEntity struct {
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Blendmap Demo",
 		Width:  800,
 		Height: 800,
 	}
 
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

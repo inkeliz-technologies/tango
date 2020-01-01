@@ -9,8 +9,8 @@ For doing so, it created a green background. This way, you'll notice the moving.
 This code is key in this demo:
 
 ```go
-engo.Mailbox.Dispatch(engo.CameraMessage{
-    Axis:        engo.ZAxis,
+tango.Mailbox.Dispatch(tango.CameraMessage{
+    Axis:        tango.ZAxis,
     Value:       3, // so zooming out a lot
     Incremental: true,
     Duration:    time.Second * 5,

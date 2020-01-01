@@ -5,9 +5,9 @@ package main
 import (
 	"image/color"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 var (
@@ -48,20 +48,20 @@ type Tile struct {
 
 func (*DefaultScene) Preload() {
 	// Load character model
-	engo.Files.Load("orange_vehicles.png")
+	tango.Files.Load("orange_vehicles.png")
 
 	// Load TileMap
-	if err := engo.Files.Load("map.tmx"); err != nil {
+	if err := tango.Files.Load("map.tmx"); err != nil {
 		panic(err)
 	}
 
-	engo.Input.RegisterButton(upButton, engo.KeyW, engo.KeyArrowUp)
-	engo.Input.RegisterButton(leftButton, engo.KeyA, engo.KeyArrowLeft)
-	engo.Input.RegisterButton(rightButton, engo.KeyD, engo.KeyArrowRight)
-	engo.Input.RegisterButton(downButton, engo.KeyS, engo.KeyArrowDown)
+	tango.Input.RegisterButton(upButton, tango.KeyW, tango.KeyArrowUp)
+	tango.Input.RegisterButton(leftButton, tango.KeyA, tango.KeyArrowLeft)
+	tango.Input.RegisterButton(rightButton, tango.KeyD, tango.KeyArrowRight)
+	tango.Input.RegisterButton(downButton, tango.KeyS, tango.KeyArrowDown)
 }
 
-func (scene *DefaultScene) Setup(u engo.Updater) {
+func (scene *DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -71,7 +71,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 	w.AddSystem(&ControlSystem{})
 
 	// Setup TileMap
-	resource, err := engo.Files.Resource("map.tmx")
+	resource, err := tango.Files.Resource("map.tmx")
 	if err != nil {
 		panic(err)
 	}
@@ -84,13 +84,13 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 	car := &Car{BasicEntity: ecs.NewBasic()}
 
 	car.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{X: 0, Y: 0},
+		Position: tango.Point{X: 0, Y: 0},
 		Width:    float32(32) * 4,
 		Height:   float32(32) * 4,
 	}
 	car.RenderComponent = common.RenderComponent{
 		Drawable: spriteSheet.Cell(0),
-		Scale:    engo.Point{4, 4},
+		Scale:    tango.Point{4, 4},
 	}
 
 	car.SpeedComponent = SpeedComponent{}
@@ -138,7 +138,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 				tile := &Tile{BasicEntity: ecs.NewBasic()}
 				tile.RenderComponent = common.RenderComponent{
 					Drawable: tileElement,
-					Scale:    engo.Point{1, 1},
+					Scale:    tango.Point{1, 1},
 				}
 				tile.SetZIndex(0)
 				tile.SpaceComponent = common.SpaceComponent{
@@ -163,16 +163,16 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 	}
 
 	// Setup character and movement
-	engo.Input.RegisterAxis(
+	tango.Input.RegisterAxis(
 		"vertical",
-		engo.AxisKeyPair{engo.KeyArrowUp, engo.KeyArrowDown},
-		engo.AxisKeyPair{engo.KeyW, engo.KeyS},
+		tango.AxisKeyPair{tango.KeyArrowUp, tango.KeyArrowDown},
+		tango.AxisKeyPair{tango.KeyW, tango.KeyS},
 	)
 
-	engo.Input.RegisterAxis(
+	tango.Input.RegisterAxis(
 		"horizontal",
-		engo.AxisKeyPair{engo.KeyArrowLeft, engo.KeyArrowRight},
-		engo.AxisKeyPair{engo.KeyA, engo.KeyD},
+		tango.AxisKeyPair{tango.KeyArrowLeft, tango.KeyArrowRight},
+		tango.AxisKeyPair{tango.KeyA, tango.KeyD},
 	)
 
 	// Add EntityScroller System
@@ -186,7 +186,7 @@ func (*DefaultScene) Type() string { return "DefaultScene" }
 
 type SpeedMessage struct {
 	*ecs.BasicEntity
-	engo.Point
+	tango.Point
 }
 
 func (SpeedMessage) Type() string {
@@ -194,7 +194,7 @@ func (SpeedMessage) Type() string {
 }
 
 type SpeedComponent struct {
-	engo.Point
+	tango.Point
 }
 
 type speedEntity struct {
@@ -208,7 +208,7 @@ type SpeedSystem struct {
 }
 
 func (s *SpeedSystem) New(*ecs.World) {
-	engo.Mailbox.Listen(SPEED_MESSAGE, func(message engo.Message) {
+	tango.Mailbox.Listen(SPEED_MESSAGE, func(message tango.Message) {
 		speed, isSpeed := message.(SpeedMessage)
 		if isSpeed {
 			for _, e := range s.entities {
@@ -239,7 +239,7 @@ func (s *SpeedSystem) Remove(basic ecs.BasicEntity) {
 
 func (s *SpeedSystem) Update(dt float32) {
 	for _, e := range s.entities {
-		speed := engo.GameWidth() * dt
+		speed := tango.GameWidth() * dt
 		prev := e.SpaceComponent.Position
 		e.SpaceComponent.Position.X = e.SpaceComponent.Position.X + speed*e.SpeedComponent.Point.X
 		e.SpaceComponent.Position.Y = e.SpaceComponent.Position.Y + speed*e.SpeedComponent.Point.Y
@@ -248,7 +248,7 @@ func (s *SpeedSystem) Update(dt float32) {
 		if e.SpaceComponent.Position.X >= 0 {
 			t = levelData.GetTile(e.SpaceComponent.Center())
 		} else {
-			t = levelData.GetTile(engo.Point{
+			t = levelData.GetTile(tango.Point{
 				X: e.SpaceComponent.Position.X - float32(levelData.TileWidth),
 				Y: e.SpaceComponent.Position.Y + float32(levelData.TileHeight),
 			})
@@ -287,45 +287,45 @@ func (c *ControlSystem) Remove(basic ecs.BasicEntity) {
 	}
 }
 
-func getSpeed(e controlEntity) (p engo.Point, changed bool) {
-	p.X = engo.Input.Axis(e.ControlComponent.SchemeHoriz).Value()
-	p.Y = engo.Input.Axis(e.ControlComponent.SchemeVert).Value()
+func getSpeed(e controlEntity) (p tango.Point, changed bool) {
+	p.X = tango.Input.Axis(e.ControlComponent.SchemeHoriz).Value()
+	p.Y = tango.Input.Axis(e.ControlComponent.SchemeVert).Value()
 	origX, origY := p.X, p.Y
 
-	if engo.Input.Button(upButton).JustPressed() {
+	if tango.Input.Button(upButton).JustPressed() {
 		p.Y = -1
-	} else if engo.Input.Button(downButton).JustPressed() {
+	} else if tango.Input.Button(downButton).JustPressed() {
 		p.Y = 1
 	}
-	if engo.Input.Button(leftButton).JustPressed() {
+	if tango.Input.Button(leftButton).JustPressed() {
 		p.X = -1
-	} else if engo.Input.Button(rightButton).JustPressed() {
+	} else if tango.Input.Button(rightButton).JustPressed() {
 		p.X = 1
 	}
 
-	if engo.Input.Button(upButton).JustReleased() || engo.Input.Button(downButton).JustReleased() {
+	if tango.Input.Button(upButton).JustReleased() || tango.Input.Button(downButton).JustReleased() {
 		p.Y = 0
 		changed = true
-		if engo.Input.Button(upButton).Down() {
+		if tango.Input.Button(upButton).Down() {
 			p.Y = -1
-		} else if engo.Input.Button(downButton).Down() {
+		} else if tango.Input.Button(downButton).Down() {
 			p.Y = 1
-		} else if engo.Input.Button(leftButton).Down() {
+		} else if tango.Input.Button(leftButton).Down() {
 			p.X = -1
-		} else if engo.Input.Button(rightButton).Down() {
+		} else if tango.Input.Button(rightButton).Down() {
 			p.X = 1
 		}
 	}
-	if engo.Input.Button(leftButton).JustReleased() || engo.Input.Button(rightButton).JustReleased() {
+	if tango.Input.Button(leftButton).JustReleased() || tango.Input.Button(rightButton).JustReleased() {
 		p.X = 0
 		changed = true
-		if engo.Input.Button(leftButton).Down() {
+		if tango.Input.Button(leftButton).Down() {
 			p.X = -1
-		} else if engo.Input.Button(rightButton).Down() {
+		} else if tango.Input.Button(rightButton).Down() {
 			p.X = 1
-		} else if engo.Input.Button(upButton).Down() {
+		} else if tango.Input.Button(upButton).Down() {
 			p.Y = -1
-		} else if engo.Input.Button(downButton).Down() {
+		} else if tango.Input.Button(downButton).Down() {
 			p.Y = 1
 		}
 	}
@@ -339,16 +339,16 @@ func (c *ControlSystem) Update(dt float32) {
 			speed := dt * SPEED_SCALE
 			vector, _ = vector.Normalize()
 			vector.MultiplyScalar(speed)
-			engo.Mailbox.Dispatch(SpeedMessage{e.BasicEntity, vector})
+			tango.Mailbox.Dispatch(SpeedMessage{e.BasicEntity, vector})
 		}
 	}
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "My Little Isometric Adventure",
 		Width:  500,
 		Height: 500,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

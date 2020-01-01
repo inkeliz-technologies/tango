@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/gl"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
@@ -56,7 +56,7 @@ func (f *Font) Create() error {
 
 // CreatePreloaded is for loading fonts which have already been defined (and loaded) within Preload
 func (f *Font) CreatePreloaded() error {
-	fontres, err := engo.Files.Resource(f.URL)
+	fontres, err := tango.Files.Resource(f.URL)
 	if err != nil {
 		return err
 	}

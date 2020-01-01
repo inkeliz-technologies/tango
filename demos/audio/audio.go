@@ -6,9 +6,9 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
@@ -19,19 +19,19 @@ type Whoop struct {
 }
 
 func (s *DefaultScene) Preload() {
-	err := engo.Files.Load("326488.wav")
+	err := tango.Files.Load("326488.wav")
 	if err != nil {
 		log.Println(err)
 	}
-	err = engo.Files.Load("326064.wav")
+	err = tango.Files.Load("326064.wav")
 	if err != nil {
 		log.Println(err)
 	}
 
-	engo.Input.RegisterButton("whoop", engo.KeySpace)
+	tango.Input.RegisterButton("whoop", tango.KeySpace)
 }
 
-func (s *DefaultScene) Setup(u engo.Updater) {
+func (s *DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -89,7 +89,7 @@ func (w *WhoopSystem) Add(audio *common.AudioComponent) {
 func (w *WhoopSystem) Remove(basic ecs.BasicEntity) {}
 
 func (w *WhoopSystem) Update(dt float32) {
-	if btn := engo.Input.Button("whoop"); btn.JustPressed() {
+	if btn := tango.Input.Button("whoop"); btn.JustPressed() {
 		if !w.player.IsPlaying() {
 			w.player.Rewind()
 			w.player.Play()
@@ -115,10 +115,10 @@ func (w *WhoopSystem) Update(dt float32) {
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Audio Demo",
 		Width:  1024,
 		Height: 640,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

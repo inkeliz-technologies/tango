@@ -5,8 +5,8 @@ package common
 import (
 	"testing"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,18 +14,18 @@ type testScene struct{}
 
 func (*testScene) Preload() {}
 
-func (t *testScene) Setup(u engo.Updater) {}
+func (t *testScene) Setup(u tango.Updater) {}
 
 func (*testScene) Type() string { return "testScene" }
 
 // TestShadersInitialization tests whether all registered `Shader`s will `Setup` without any errors
 func TestShadersInitialization(t *testing.T) {
-	engo.Run(engo.RunOptions{
+	tango.Run(tango.RunOptions{
 		NoRun:        true,
 		HeadlessMode: true,
 	}, &testScene{})
-	engo.CreateWindow("", 100, 100, false, 1)
-	defer engo.DestroyWindow()
+	tango.CreateWindow("", 100, 100, false, 1)
+	defer tango.DestroyWindow()
 
 	w := &ecs.World{}
 	w.AddSystem(&CameraSystem{})
@@ -36,12 +36,12 @@ func TestShadersInitialization(t *testing.T) {
 // TestShaderCompilation tests whether the `LoadShader` method will indeed report errors iff
 // (one of) the GLSL-shaders is incorrect.
 func TestShaderCompilation(t *testing.T) {
-	engo.Run(engo.RunOptions{
+	tango.Run(tango.RunOptions{
 		NoRun:        true,
 		HeadlessMode: true,
 	}, &testScene{})
-	engo.CreateWindow("", 100, 100, false, 1)
-	defer engo.DestroyWindow()
+	tango.CreateWindow("", 100, 100, false, 1)
+	defer tango.DestroyWindow()
 
 	var err error
 

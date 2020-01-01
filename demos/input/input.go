@@ -5,22 +5,22 @@ package main
 import (
 	"fmt"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
 
 func (*DefaultScene) Preload() {}
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	w.AddSystem(&common.RenderSystem{})
 	w.AddSystem(&InputSystem{})
 
-	engo.Input.RegisterAxis("sideways", engo.AxisKeyPair{engo.KeyA, engo.KeyD})
-	engo.Input.RegisterButton("action", engo.KeySpace, engo.KeyEnter)
+	tango.Input.RegisterAxis("sideways", tango.AxisKeyPair{tango.KeyA, tango.KeyD})
+	tango.Input.RegisterButton("action", tango.KeySpace, tango.KeyEnter)
 }
 
 func (*DefaultScene) Type() string { return "Game" }
@@ -52,21 +52,21 @@ func (c *InputSystem) Remove(basic ecs.BasicEntity) {
 }
 
 func (c *InputSystem) Update(dt float32) {
-	if v := engo.Input.Axis("sideways").Value(); v != 0 {
+	if v := tango.Input.Axis("sideways").Value(); v != 0 {
 		fmt.Println(v)
 	}
 
-	if btn := engo.Input.Button("action"); btn.JustPressed() {
+	if btn := tango.Input.Button("action"); btn.JustPressed() {
 		fmt.Println("DOWN!")
 	}
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Input Demo",
 		Width:  1024,
 		Height: 640,
 	}
 
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

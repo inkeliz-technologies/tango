@@ -8,7 +8,7 @@ It demonstrates how one can efficiently draw text onto the screen.
 First off, we have to load the `ttf` (TrueType Font) file within the `Preload` method:
 
 ```go
-err := engo.Files.Load("Roboto-Regular.ttf")
+err := tango.Files.Load("Roboto-Regular.ttf")
 ```
 
 Then, whenever we want to use it, we can load it like this:

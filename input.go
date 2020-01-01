@@ -1,4 +1,4 @@
-package engo
+package tango
 
 const (
 	// AxisMax is the maximum value a joystick or keypress axis will reach
@@ -9,7 +9,7 @@ const (
 	AxisMin float32 = -1
 )
 
-// NewInputManager holds onto anything input related for engo
+// NewInputManager holds onto anything input related for tango
 func NewInputManager() *InputManager {
 	return &InputManager{
 		Touches: make(map[int]Point),

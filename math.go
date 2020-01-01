@@ -1,7 +1,7 @@
-package engo
+package tango
 
 import (
-	"github.com/EngoEngine/engo/math"
+	"github.com/inkeliz-technologies/tango/math32"
 )
 
 const (
@@ -12,9 +12,9 @@ const (
 	MinNormal = float32(1.1754943508222875e-38) // 1 / 2**(127 - 1)
 
 	// RadToDeg is multiplied with a radian value to get the equivalant value in degrees.
-	RadToDeg = 180 / math.Pi
+	RadToDeg = 180 / math32.Pi
 	// DegToRad is multiplied with a degree value to get the equivalent value in radians.
-	DegToRad = math.Pi / 180
+	DegToRad = math32.Pi / 180
 	// Matrix row/column indexes
 	m00 = 0
 	m01 = 3
@@ -126,7 +126,7 @@ func (p *Point) Equal(p2 Point) bool {
 
 // PointDistance returns the euclidean distance between p and p2
 func (p *Point) PointDistance(p2 Point) float32 {
-	return math.Sqrt(p.PointDistanceSquared(p2))
+	return math32.Sqrt(p.PointDistanceSquared(p2))
 }
 
 // PointDistanceSquared returns the squared euclidean distance between p and p2
@@ -155,7 +155,7 @@ func (p *Point) Normalize() (Point, float32) {
 		return *p, 0
 	}
 
-	mag := math.Sqrt(p.X*p.X + p.Y*p.Y)
+	mag := math32.Sqrt(p.X*p.X + p.Y*p.Y)
 	unit := Point{p.X / mag, p.Y / mag}
 
 	return unit, mag
@@ -256,7 +256,7 @@ func (m *Matrix) RotationComponent() float32 {
 // RotationComponentRad returns the current rotation component of m in radians.
 // This assumes uniform scaling.
 func (m *Matrix) RotationComponentRad() float32 {
-	return math.Atan2(m.Val[m10], m.Val[m00])
+	return math32.Atan2(m.Val[m10], m.Val[m00])
 }
 
 // Rotate rorates m counter-clockwise by deg degrees.
@@ -269,7 +269,7 @@ func (m *Matrix) RotateRad(rad float32) *Matrix {
 	if rad == 0 {
 		return m
 	}
-	sin, cos := math.Sincos(rad)
+	sin, cos := math32.Sincos(rad)
 	m.tmp[m00] = cos
 	m.tmp[m10] = sin
 	m.tmp[m20] = 0
@@ -292,14 +292,14 @@ func (l *Line) PointSide(point Point) bool {
 	one := (point.X - l.P1.X) * (l.P2.Y - l.P1.Y)
 	two := (point.Y - l.P1.Y) * (l.P2.X - l.P1.X)
 
-	return math.Signbit(one - two)
+	return math32.Signbit(one - two)
 }
 
 // Angle returns the euclidean angle of l in radians relative to a vertical line, going
 // positive as you head towards the positive x-axis (clockwise) and negative
 // as you head towards the negative x-axis. Values returned are [-pi, pi].
 func (l *Line) Angle() float32 {
-	return math.Atan2(l.P1.X-l.P2.X, l.P1.Y-l.P2.Y)
+	return math32.Atan2(l.P1.X-l.P2.X, l.P1.Y-l.P2.Y)
 }
 
 // AngleDeg returns the euclidean angle of l in degrees relative to a vertical line, going
@@ -315,7 +315,7 @@ func (l *Line) AngleDeg() float32 {
 		return 0
 	}
 
-	deg := math.Atan(x/y) * 180 / math.Pi
+	deg := math32.Atan(x/y) * 180 / math32.Pi
 	if x > 0 && y < 0 {
 		deg = -deg
 	} else if x < 0 && y < 0 {
@@ -329,7 +329,7 @@ func (l *Line) AngleDeg() float32 {
 // PointDistance Returns the euclidean distance from the point p to the
 // line segment l
 func (l *Line) PointDistance(point Point) float32 {
-	return math.Sqrt(l.PointDistanceSquared(point))
+	return math32.Sqrt(l.PointDistanceSquared(point))
 }
 
 // PointDistanceSquared returns the squared euclidean distance from the point p
@@ -444,7 +444,7 @@ func LineTraceFraction(tracer, boundary Line) float32 {
 // and returns the nearest trace values
 func LineTrace(tracer Line, boundaries []Line) Trace {
 	var t Trace
-	t.Fraction = math.Inf(1)
+	t.Fraction = math32.Inf(1)
 
 	for _, cl := range boundaries {
 		fraction := LineTraceFraction(tracer, cl)
@@ -483,17 +483,17 @@ func FloatEqualThreshold(a, b, epsilon float32) bool {
 		return true
 	}
 
-	if math.IsNaN(a) || math.IsNaN(b) {
+	if math32.IsNaN(a) || math32.IsNaN(b) {
 		return false // Can't be equal if NaN
 	}
 
-	diff := math.Abs(a - b)
+	diff := math32.Abs(a - b)
 	if a*b == 0 || diff < MinNormal { // If a or b are 0 or both are extremely close to it
 		return diff < epsilon*epsilon
 	}
 
 	// Else compare difference
-	return diff/(math.Abs(a)+math.Abs(b)) < epsilon
+	return diff/(math32.Abs(a)+math32.Abs(b)) < epsilon
 }
 
 func multiplyMatricies(m1, m2 []float32) {

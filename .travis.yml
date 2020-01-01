@@ -7,7 +7,7 @@ branches:
   only:
   - master
 language: go
-go_import_path: github.com/EngoEngine/engo
+go_import_path: github.com/inkeliz-technologies/tango
 go:
 - "1.12"
 services:

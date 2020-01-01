@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Logb returns the binary exponent of x.
@@ -11,7 +11,7 @@ import (
 //	Logb(0) = -Inf
 //	Logb(NaN) = NaN
 func Logb(x float32) float32 {
-	return engomath.Logb(x)
+	return math.Logb(x)
 }
 
 // Ilogb returns the binary exponent of x as an integer.
@@ -21,5 +21,5 @@ func Logb(x float32) float32 {
 //	Ilogb(0) = MinInt32
 //	Ilogb(NaN) = MaxInt32
 func Ilogb(x float32) int {
-	return engomath.Ilogb(x)
+	return math.Ilogb(x)
 }

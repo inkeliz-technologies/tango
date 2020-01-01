@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common/internal/decode/convert"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common/internal/decode/convert"
 )
 
 // SampleRate is the sample rate at which the player plays audio. Any audios
@@ -50,7 +50,7 @@ type proceededValues struct {
 	err error
 }
 
-// URL implements the engo.Resource interface. It retrieves the player's source url.
+// URL implements the tango.Resource interface. It retrieves the player's source url.
 func (p *Player) URL() string {
 	return p.url
 }
@@ -151,9 +151,9 @@ func (p *Player) readLoop() {
 
 			// Try to read the buffer for 1/60[s].
 			s := 60
-			if engo.CurrentBackEnd == engo.BackEndWeb {
+			if tango.CurrentBackEnd == tango.BackEndWeb {
 				s = 20
-				if engo.IsAndroidChrome() {
+				if tango.IsAndroidChrome() {
 					s = 10
 				}
 			}
@@ -175,7 +175,7 @@ func (p *Player) readLoop() {
 				t = nil
 				break
 			}
-			if engo.CurrentBackEnd == engo.BackEndWeb {
+			if tango.CurrentBackEnd == tango.BackEndWeb {
 				t = time.After(10 * time.Millisecond)
 			} else {
 				t = time.After(time.Millisecond)

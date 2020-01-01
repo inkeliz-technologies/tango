@@ -3,9 +3,9 @@ package common
 import (
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/math"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/math32"
 )
 
 // Shape is a shape used for a SpaceComponent's hitboxes. It is composed of
@@ -13,7 +13,7 @@ import (
 // shape.
 type Shape struct {
 	Ellipse Ellipse
-	Lines   []engo.Line
+	Lines   []tango.Line
 }
 
 // Ellipse represnets an ellpitical shape.
@@ -26,7 +26,7 @@ type Ellipse struct {
 
 // SpaceComponent keeps track of the position, size, and rotation of entities.
 type SpaceComponent struct {
-	Position engo.Point
+	Position tango.Point
 	Width    float32
 	Height   float32
 	Rotation float32 // angle in degrees for the rotation to apply clockwise.
@@ -36,7 +36,7 @@ type SpaceComponent struct {
 
 // AddShape adds a shape to the SpaceComponent for use as a hitbox. A SpaceComponent
 // can have any number of shapes attached to it. The shapes are made up of a
-// []engo.Line, with each line defining a face of the shape. The coordinates are
+// []tango.Line, with each line defining a face of the shape. The coordinates are
 // such that (0,0) is the upper left corner of the SpaceComponent. If no shapes
 // are added, the SpaceComponent is treated as an AABB.
 func (sc *SpaceComponent) AddShape(shape Shape) {
@@ -44,8 +44,8 @@ func (sc *SpaceComponent) AddShape(shape Shape) {
 }
 
 // SetCenter positions the space component according to its center instead of its
-// top-left point (this avoids doing the same math each time in your systems)
-func (sc *SpaceComponent) SetCenter(p engo.Point) {
+// top-left point (this avoids doing the same math32 each time in your systems)
+func (sc *SpaceComponent) SetCenter(p tango.Point) {
 	xDelta := sc.Width / 2
 	yDelta := sc.Height / 2
 	// update position according to point being used as our center
@@ -54,7 +54,7 @@ func (sc *SpaceComponent) SetCenter(p engo.Point) {
 		sc.Position.Y = p.Y - yDelta
 		return
 	}
-	sin, cos := math.Sincos(sc.Rotation * math.Pi / 180)
+	sin, cos := math32.Sincos(sc.Rotation * math32.Pi / 180)
 	xDelta = (sc.Width*cos - sc.Height*sin) / 2
 	yDelta = (sc.Height*cos + sc.Width*sin) / 2
 	sc.Position.X = p.X - xDelta
@@ -62,42 +62,42 @@ func (sc *SpaceComponent) SetCenter(p engo.Point) {
 }
 
 // Center gets the center position of the space component instead of its
-// top-left point (this avoids doing the same math each time in your systems)
-func (sc *SpaceComponent) Center() engo.Point {
+// top-left point (this avoids doing the same math32 each time in your systems)
+func (sc *SpaceComponent) Center() tango.Point {
 	xDelta := sc.Width / 2
 	yDelta := sc.Height / 2
 	p := sc.Position
 	if sc.Rotation == 0 {
-		return engo.Point{X: p.X + xDelta, Y: p.Y + yDelta}
+		return tango.Point{X: p.X + xDelta, Y: p.Y + yDelta}
 	}
-	sin, cos := math.Sincos(sc.Rotation * math.Pi / 180)
+	sin, cos := math32.Sincos(sc.Rotation * math32.Pi / 180)
 	xDelta = (sc.Width*cos - sc.Height*sin) / 2
 	yDelta = (sc.Height*cos + sc.Width*sin) / 2
-	return engo.Point{X: p.X + xDelta, Y: p.Y + yDelta}
+	return tango.Point{X: p.X + xDelta, Y: p.Y + yDelta}
 }
 
 // AABB returns the minimum and maximum point for the given SpaceComponent. It hereby takes into account the
-// rotation of the Component - it may very well be that the Minimum as given by engo.AABB, is smaller than the Position
+// rotation of the Component - it may very well be that the Minimum as given by tango.AABB, is smaller than the Position
 // of the object (i.e. when rotated).
 //
 // This basically returns the "outer rectangle" of the plane defined by the `SpaceComponent`. Since this returns two
 // points, a minimum and a maximum, the "rectangle" resulting from this `AABB`, is not rotated in any way. However,
 // depending on the rotation of the `SpaceComponent`, this `AABB` may be larger than the original `SpaceComponent`.
-func (sc SpaceComponent) AABB() engo.AABB {
+func (sc SpaceComponent) AABB() tango.AABB {
 	if sc.Rotation == 0 {
-		return engo.AABB{
+		return tango.AABB{
 			Min: sc.Position,
-			Max: engo.Point{X: sc.Position.X + sc.Width, Y: sc.Position.Y + sc.Height},
+			Max: tango.Point{X: sc.Position.X + sc.Width, Y: sc.Position.Y + sc.Height},
 		}
 	}
 
 	corners := sc.Corners()
 
 	var (
-		xMin float32 = math.MaxFloat32
-		xMax float32 = -math.MaxFloat32
-		yMin float32 = math.MaxFloat32
-		yMax float32 = -math.MaxFloat32
+		xMin float32 = math32.MaxFloat32
+		xMax float32 = -math32.MaxFloat32
+		yMin float32 = math32.MaxFloat32
+		yMax float32 = -math32.MaxFloat32
 	)
 
 	for i := 0; i < 4; i++ {
@@ -114,16 +114,16 @@ func (sc SpaceComponent) AABB() engo.AABB {
 		}
 	}
 
-	return engo.AABB{Min: engo.Point{X: xMin, Y: yMin}, Max: engo.Point{X: xMax, Y: yMax}}
+	return tango.AABB{Min: tango.Point{X: xMin, Y: yMin}, Max: tango.Point{X: xMax, Y: yMax}}
 }
 
 // Corners returns the location of the four corners of the rectangular plane defined by the `SpaceComponent`, taking
 // into account any possible rotation.
-func (sc SpaceComponent) Corners() (points [4]engo.Point) {
+func (sc SpaceComponent) Corners() (points [4]tango.Point) {
 	points[0].X = sc.Position.X
 	points[0].Y = sc.Position.Y
 
-	sin, cos := math.Sincos(sc.Rotation * math.Pi / 180)
+	sin, cos := math32.Sincos(sc.Rotation * math32.Pi / 180)
 
 	points[1].X = points[0].X + sc.Width*cos
 	points[1].Y = points[0].Y + sc.Width*sin
@@ -141,13 +141,13 @@ func (sc SpaceComponent) Corners() (points [4]engo.Point) {
 // If it's on the border, it is considered "not within".
 // If there is no shape defined, then this uses a rectangular area defined by the
 // Width/Height of the SpaceComponent instead.
-func (sc SpaceComponent) Contains(p engo.Point) bool {
+func (sc SpaceComponent) Contains(p tango.Point) bool {
 	if len(sc.hitboxes) == 0 {
 		points := sc.Corners()
 		halfArea := (sc.Width * sc.Height) / 2
 		for i := 0; i < 4; i++ {
 			for j := i + 1; j < 4; j++ {
-				if t := triangleArea(points[i], points[j], p); t > halfArea || engo.FloatEqual(t, halfArea) {
+				if t := triangleArea(points[i], points[j], p); t > halfArea || tango.FloatEqual(t, halfArea) {
 					return false
 				}
 			}
@@ -157,17 +157,17 @@ func (sc SpaceComponent) Contains(p engo.Point) bool {
 	// test line from the point to an arbitrary point far away
 	// hopefully this is big enough
 	// TODO: Make it editable?
-	testline := engo.Line{
+	testline := tango.Line{
 		P1: p,
-		P2: engo.Point{
+		P2: tango.Point{
 			X: 1E10,
 			Y: 1E10,
 		},
 	}
-	sin, cos := math.Sincos(sc.Rotation * math.Pi / 180)
+	sin, cos := math32.Sincos(sc.Rotation * math32.Pi / 180)
 	// test point for ellipse testing. It is rotated and translated such that the
 	// axis is that of the unrotated / translated AABB
-	testpoint := engo.Point{
+	testpoint := tango.Point{
 		X: (p.X-sc.Position.X)*cos + (p.Y-sc.Position.Y)*sin,
 		Y: (p.Y-sc.Position.Y)*cos - (p.X-sc.Position.X)*sin,
 	}
@@ -175,7 +175,7 @@ func (sc SpaceComponent) Contains(p engo.Point) bool {
 	for _, hb := range sc.hitboxes {
 		if len(hb.Lines) == 0 {
 			if testpoint.X < hb.Ellipse.Cx+hb.Ellipse.Rx && testpoint.X > hb.Ellipse.Cx-hb.Ellipse.Rx {
-				s := math.Sqrt((1 - ((testpoint.X-hb.Ellipse.Cx)*(testpoint.X-hb.Ellipse.Cx))/((hb.Ellipse.Rx)*(hb.Ellipse.Rx))) * (hb.Ellipse.Ry) * (hb.Ellipse.Ry))
+				s := math32.Sqrt((1 - ((testpoint.X-hb.Ellipse.Cx)*(testpoint.X-hb.Ellipse.Cx))/((hb.Ellipse.Rx)*(hb.Ellipse.Rx))) * (hb.Ellipse.Ry) * (hb.Ellipse.Ry))
 				if testpoint.Y < hb.Ellipse.Cy+s && testpoint.Y > hb.Ellipse.Cy-s {
 					return true
 				}
@@ -183,17 +183,17 @@ func (sc SpaceComponent) Contains(p engo.Point) bool {
 			continue
 		}
 		for _, line := range hb.Lines {
-			l := engo.Line{
-				P1: engo.Point{
+			l := tango.Line{
+				P1: tango.Point{
 					X: sc.Position.X + line.P1.X*cos - line.P1.Y*sin,
 					Y: sc.Position.Y + line.P1.Y*cos + line.P1.X*sin,
 				},
-				P2: engo.Point{
+				P2: tango.Point{
 					X: sc.Position.X + line.P2.X*cos - line.P2.Y*sin,
 					Y: sc.Position.Y + line.P2.Y*cos + line.P2.X*sin,
 				},
 			}
-			if _, ok := engo.LineIntersection(l, testline); ok {
+			if _, ok := tango.LineIntersection(l, testline); ok {
 				i++
 			}
 		}
@@ -206,17 +206,17 @@ func (sc SpaceComponent) Contains(p engo.Point) bool {
 }
 
 // triangleArea computes the area of the triangle given by the three points
-func triangleArea(p1, p2, p3 engo.Point) float32 {
-	// Law of cosines states: (note a2 = math.Pow(a, 2))
+func triangleArea(p1, p2, p3 tango.Point) float32 {
+	// Law of cosines states: (note a2 = math32.Pow(a, 2))
 	// a2 = b2 + c2 - 2bc*cos(alpha)
 	// This ends in: alpha = arccos ((-a2 + b2 + c2)/(2bc))
 	a := p1.PointDistance(p3)
 	b := p1.PointDistance(p2)
 	c := p2.PointDistance(p3)
-	alpha := math.Acos((-math.Pow(a, 2) + math.Pow(b, 2) + math.Pow(c, 2)) / (2 * b * c))
+	alpha := math32.Acos((-math32.Pow(a, 2) + math32.Pow(b, 2) + math32.Pow(c, 2)) / (2 * b * c))
 
 	// Law of sines state: a / sin(alpha) = c / sin(gamma)
-	height := (c / math.Sin(math.Pi/2)) * math.Sin(alpha)
+	height := (c / math32.Sin(math32.Pi/2)) * math32.Sin(alpha)
 
 	return (b * height) / 2
 }
@@ -234,7 +234,7 @@ type CollisionComponent struct {
 	// if a.Main & (bitwise) b.Group, items can collide
 	// if a.Main == 0, it will not loop for other items
 	Main, Group CollisionGroup
-	Extra       engo.Point
+	Extra       tango.Point
 	Collides    CollisionGroup
 }
 
@@ -250,7 +250,7 @@ type CollisionMessage struct {
 // for the different kinds of collisions they hope to use
 type CollisionGroup byte
 
-// Type implements the engo.Message interface
+// Type implements the tango.Message interface
 func (CollisionMessage) Type() string { return "CollisionMessage" }
 
 type collisionEntity struct {
@@ -304,7 +304,7 @@ func (c *CollisionSystem) Update(dt float32) {
 		}
 
 		entityAABB := e1.SpaceComponent.AABB()
-		offset := engo.Point{X: e1.CollisionComponent.Extra.X / 2, Y: e1.CollisionComponent.Extra.Y / 2}
+		offset := tango.Point{X: e1.CollisionComponent.Extra.X / 2, Y: e1.CollisionComponent.Extra.Y / 2}
 		entityAABB.Min.X -= offset.X
 		entityAABB.Min.Y -= offset.Y
 		entityAABB.Max.X += offset.X
@@ -322,7 +322,7 @@ func (c *CollisionSystem) Update(dt float32) {
 			}
 
 			otherAABB := e2.SpaceComponent.AABB()
-			offset = engo.Point{X: e2.CollisionComponent.Extra.X / 2, Y: e2.CollisionComponent.Extra.Y / 2}
+			offset = tango.Point{X: e2.CollisionComponent.Extra.X / 2, Y: e2.CollisionComponent.Extra.Y / 2}
 			otherAABB.Min.X -= offset.X
 			otherAABB.Min.Y -= offset.Y
 			otherAABB.Max.X += offset.X
@@ -339,7 +339,7 @@ func (c *CollisionSystem) Update(dt float32) {
 						e2.SpaceComponent.Position.Y -= mtd.Y / 2
 						//As the entities are no longer overlapping
 						//e2 wont collide as main
-						engo.Mailbox.Dispatch(CollisionMessage{Entity: e2, To: e1, Groups: cgroup})
+						tango.Mailbox.Dispatch(CollisionMessage{Entity: e2, To: e1, Groups: cgroup})
 					} else {
 						//collision with one main
 						e1.SpaceComponent.Position.X += mtd.X
@@ -349,11 +349,11 @@ func (c *CollisionSystem) Update(dt float32) {
 
 				//collided can now list the types of collision
 				collided = collided | cgroup
-				engo.Mailbox.Dispatch(CollisionMessage{Entity: e1, To: e2, Groups: cgroup})
+				tango.Mailbox.Dispatch(CollisionMessage{Entity: e1, To: e2, Groups: cgroup})
 
 				//update the position tracker of e1
 				entityAABB = e1.SpaceComponent.AABB()
-				offset := engo.Point{X: e1.CollisionComponent.Extra.X / 2, Y: e1.CollisionComponent.Extra.Y / 2}
+				offset := tango.Point{X: e1.CollisionComponent.Extra.X / 2, Y: e1.CollisionComponent.Extra.Y / 2}
 				entityAABB.Min.X -= offset.X
 				entityAABB.Min.Y -= offset.Y
 				entityAABB.Max.X += offset.X
@@ -365,8 +365,8 @@ func (c *CollisionSystem) Update(dt float32) {
 	}
 }
 
-// IsIntersecting tells if two engo.AABBs intersect.
-func IsIntersecting(rect1 engo.AABB, rect2 engo.AABB) bool {
+// IsIntersecting tells if two tango.AABBs intersect.
+func IsIntersecting(rect1 tango.AABB, rect2 tango.AABB) bool {
 	if rect1.Max.X > rect2.Min.X && rect1.Min.X < rect2.Max.X && rect1.Max.Y > rect2.Min.Y && rect1.Min.Y < rect2.Max.Y {
 		return true
 	}
@@ -375,8 +375,8 @@ func IsIntersecting(rect1 engo.AABB, rect2 engo.AABB) bool {
 }
 
 // MinimumTranslation tells how much an entity has to move to no longer overlap another entity.
-func MinimumTranslation(rect1 engo.AABB, rect2 engo.AABB) engo.Point {
-	mtd := engo.Point{}
+func MinimumTranslation(rect1 tango.AABB, rect2 tango.AABB) tango.Point {
+	mtd := tango.Point{}
 
 	left := rect2.Min.X - rect1.Max.X
 	right := rect2.Max.X - rect1.Min.X
@@ -394,19 +394,19 @@ func MinimumTranslation(rect1 engo.AABB, rect2 engo.AABB) engo.Point {
 		return mtd
 		//box doesn't intercept
 	}
-	if math.Abs(left) < right {
+	if math32.Abs(left) < right {
 		mtd.X = left
 	} else {
 		mtd.X = right
 	}
 
-	if math.Abs(top) < bottom {
+	if math32.Abs(top) < bottom {
 		mtd.Y = top
 	} else {
 		mtd.Y = bottom
 	}
 
-	if math.Abs(mtd.X) < math.Abs(mtd.Y) {
+	if math32.Abs(mtd.X) < math32.Abs(mtd.Y) {
 		mtd.Y = 0
 	} else {
 		mtd.X = 0

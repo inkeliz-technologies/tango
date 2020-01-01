@@ -5,9 +5,9 @@ package main
 import (
 	"image/color"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
@@ -27,21 +27,21 @@ type MyLabel struct {
 }
 
 func (*DefaultScene) Preload() {
-	err := engo.Files.Load("Roboto-Regular.ttf")
+	err := tango.Files.Load("Roboto-Regular.ttf")
 	if err != nil {
 		panic(err)
 	}
 }
 
 // Setup is called before the main loop is started
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
 	w.AddSystem(&common.RenderSystem{})
 
 	// Adding KeyboardScroller so we can actually see the difference between the HUD and non-HUD text
-	w.AddSystem(common.NewKeyboardScroller(scrollSpeed, engo.DefaultHorizontalAxis, engo.DefaultVerticalAxis))
+	w.AddSystem(common.NewKeyboardScroller(scrollSpeed, tango.DefaultHorizontalAxis, tango.DefaultVerticalAxis))
 	w.AddSystem(&common.MouseZoomer{zoomSpeed})
 
 	fnt := &common.Font{
@@ -81,11 +81,11 @@ func (*DefaultScene) Setup(u engo.Updater) {
 func (*DefaultScene) Type() string { return "Game" }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:          "Text Demo",
 		Width:          worldWidth,
 		Height:         worldHeight,
 		StandardInputs: true,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

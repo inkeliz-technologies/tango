@@ -10,7 +10,7 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/tango"
 )
 
 var testTMXtmpl = `
@@ -106,13 +106,13 @@ type tmxTestScene struct{}
 
 func (*tmxTestScene) Preload() {}
 
-func (*tmxTestScene) Setup(engo.Updater) {}
+func (*tmxTestScene) Setup(tango.Updater) {}
 
 func (*tmxTestScene) Type() string { return "testScene" }
 
 func TestTMXFiletypeLoad(t *testing.T) {
-	// Start an instance of engo
-	engo.Run(engo.RunOptions{
+	// Start an instance of tango
+	tango.Run(tango.RunOptions{
 		NoRun:        true,
 		HeadlessMode: true,
 	}, &tmxTestScene{})
@@ -126,7 +126,7 @@ func TestTMXFiletypeLoad(t *testing.T) {
 	}
 
 	// Load the image
-	err = engo.Files.LoadReaderData("test.png", imgbuf)
+	err = tango.Files.LoadReaderData("test.png", imgbuf)
 	if err != nil {
 		t.Errorf("Unable to load test png. Error was: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestTMXFiletypeLoad(t *testing.T) {
 	}
 
 	// Load tmx
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load tmx file for testing. Error was: %v", err)
 	}
@@ -154,7 +154,7 @@ func TestTMXFiletypeLoad(t *testing.T) {
 
 func TestTMXTileNotLoadedFileNotExist(t *testing.T) {
 	// Ensure the file is not loaded
-	engo.Files.Unload("test.png")
+	tango.Files.Unload("test.png")
 
 	// Load the template
 	buf := bytes.NewBuffer([]byte{})
@@ -172,7 +172,7 @@ func TestTMXTileNotLoadedFileNotExist(t *testing.T) {
 	}
 
 	// Load tmx
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err == nil {
 		t.Errorf("Unable to load tmx file from unloaded png. Error was: %v", err)
 	}
@@ -192,7 +192,7 @@ func TestTMXTileNotLoadedTempFile(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	engo.Files.SetRoot(dir)
+	tango.Files.SetRoot(dir)
 
 	tmpfn := filepath.Join(dir, "test.png")
 	if err = ioutil.WriteFile(tmpfn, imgbuf.Bytes(), 0666); err != nil {
@@ -213,8 +213,8 @@ func TestTMXTileNotLoadedTempFile(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	engo.Files.Unload("test.png")
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	tango.Files.Unload("test.png")
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load test image from file while loading tmx. Error: %v", err)
 	}
@@ -234,7 +234,7 @@ func TestTMXTileNotLoadedTempFileBadExtensions(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	engo.Files.SetRoot(dir)
+	tango.Files.SetRoot(dir)
 
 	tmpfn := filepath.Join(dir, "test.test")
 	if err = ioutil.WriteFile(tmpfn, imgbuf.Bytes(), 0666); err != nil {
@@ -255,15 +255,15 @@ func TestTMXTileNotLoadedTempFileBadExtensions(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	engo.Files.Unload("test.test")
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	tango.Files.Unload("test.test")
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err == nil {
 		t.Errorf("Able to load test image with bad extension from file while loading tmx.")
 	}
 }
 
 func TestTMXBadFile(t *testing.T) {
-	err := engo.Files.LoadReaderData("bad.tmx", bytes.NewBufferString(badTMX))
+	err := tango.Files.LoadReaderData("bad.tmx", bytes.NewBufferString(badTMX))
 	if err == nil {
 		t.Error("able to load bad tmx file without an error")
 	}
@@ -277,7 +277,7 @@ func TestTMXGrid(t *testing.T) {
 		t.Errorf("Unable to encode png from image")
 	}
 
-	err = engo.Files.LoadReaderData("test.png", imgbuf)
+	err = tango.Files.LoadReaderData("test.png", imgbuf)
 	if err != nil {
 		t.Errorf("Unable to load test png. Error was: %v", err)
 	}
@@ -296,12 +296,12 @@ func TestTMXGrid(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load tmx file for testing. Error was: %v", err)
 	}
 
-	resource, err := engo.Files.Resource("test.tmx")
+	resource, err := tango.Files.Resource("test.tmx")
 	if err != nil {
 		panic(err)
 	}
@@ -334,7 +334,7 @@ func TestTMXTileImages(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load tmx file for testing. Error was: %v", err)
 	}
@@ -355,8 +355,8 @@ func TestTMXTileImagesNotLoadedFileNotExist(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	engo.Files.Unload("test.png")
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	tango.Files.Unload("test.png")
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err == nil {
 		t.Errorf("Able to load tmx file even though assets aren't found.")
 	}
@@ -376,7 +376,7 @@ func TestTMXTileImagesNotLoadedTempFile(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	engo.Files.SetRoot(dir)
+	tango.Files.SetRoot(dir)
 
 	tmpfn := filepath.Join(dir, "test.png")
 	if err = ioutil.WriteFile(tmpfn, imgbuf.Bytes(), 0666); err != nil {
@@ -397,8 +397,8 @@ func TestTMXTileImagesNotLoadedTempFile(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	engo.Files.Unload("test.png")
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	tango.Files.Unload("test.png")
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load test image from file while loading tmx. Error: %v", err)
 	}
@@ -420,7 +420,7 @@ func TestTMXTileImageWrongFileType(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err == nil {
 		t.Error("Able to load tmx when it contains bad image files")
 	}
@@ -442,7 +442,7 @@ func TestTMXBadImageExtension(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err == nil {
 		t.Error("Able to load tmx with bad image layer extension")
 	}
@@ -464,8 +464,8 @@ func TestTMXBadObjectImageExtension(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	engo.Files.Unload("test.png.test")
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	tango.Files.Unload("test.png.test")
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err == nil {
 		t.Error("Able to load tmx with bad object image layer extension")
 	}
@@ -485,7 +485,7 @@ func TestObjectImageNotExistTempFile(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	engo.Files.SetRoot(dir)
+	tango.Files.SetRoot(dir)
 
 	tmpfn := filepath.Join(dir, "objimgtest.png")
 	if err = ioutil.WriteFile(tmpfn, imgbuf.Bytes(), 0666); err != nil {
@@ -507,8 +507,8 @@ func TestObjectImageNotExistTempFile(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	engo.Files.Unload("objimgtest.png")
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	tango.Files.Unload("objimgtest.png")
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load test image from file while loading object image. Error: %v", err)
 	}
@@ -530,8 +530,8 @@ func TestTMXBadObjectImageNotExist(t *testing.T) {
 		t.Error("Error executing tmx template")
 	}
 
-	engo.Files.Unload("objimgtest.png")
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	tango.Files.Unload("objimgtest.png")
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err == nil {
 		t.Error("Able to load tmx with bad object image layer extension")
 	}
@@ -547,7 +547,7 @@ func TestTMXAsset(t *testing.T) {
 	}
 
 	// Load the image
-	err = engo.Files.LoadReaderData("test.png", imgbuf)
+	err = tango.Files.LoadReaderData("test.png", imgbuf)
 	if err != nil {
 		t.Errorf("Unable to load test png. Error was: %v", err)
 	}
@@ -567,12 +567,12 @@ func TestTMXAsset(t *testing.T) {
 	}
 
 	// Load tmx
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load tmx file for testing. Error was: %v", err)
 	}
 
-	resource, err := engo.Files.Resource("test.tmx")
+	resource, err := tango.Files.Resource("test.tmx")
 	if err != nil {
 		t.Errorf("Unable to retrieve resource. Error was: %v", err)
 	}
@@ -583,10 +583,10 @@ func TestTMXAsset(t *testing.T) {
 	}
 
 	// Unload it
-	engo.Files.Unload("test.tmx")
+	tango.Files.Unload("test.tmx")
 
 	// Check that it's unloaded
-	resource, err = engo.Files.Resource("test.tmx")
+	resource, err = tango.Files.Resource("test.tmx")
 	if err == nil {
 		t.Error("After unloading, resource was retireved.")
 	}
@@ -602,7 +602,7 @@ func TestTMXLevel(t *testing.T) {
 	}
 
 	// Load the image
-	err = engo.Files.LoadReaderData("test.png", imgbuf)
+	err = tango.Files.LoadReaderData("test.png", imgbuf)
 	if err != nil {
 		t.Errorf("Unable to load test png. Error was: %v", err)
 	}
@@ -622,21 +622,21 @@ func TestTMXLevel(t *testing.T) {
 	}
 
 	// Load tmx
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load tmx file for testing. Error was: %v", err)
 	}
 
-	resource, err := engo.Files.Resource("test.tmx")
+	resource, err := tango.Files.Resource("test.tmx")
 	if err != nil {
 		t.Errorf("Unable to retrieve resource. Error was: %v", err)
 	}
 	tmxResource := resource.(TMXResource)
 
 	bounds := tmxResource.Level.Bounds()
-	exp := engo.AABB{
-		Min: engo.Point{X: 0, Y: 0},
-		Max: engo.Point{X: 48, Y: 48},
+	exp := tango.AABB{
+		Min: tango.Point{X: 0, Y: 0},
+		Max: tango.Point{X: 48, Y: 48},
 	}
 	if bounds.Min.X != exp.Min.X || bounds.Min.Y != exp.Min.Y || bounds.Max.X != exp.Max.X || bounds.Max.Y != exp.Max.Y {
 		t.Errorf("Bounds was not returned correctly\nWanted: %v\nGot: %v", exp, bounds)
@@ -650,8 +650,8 @@ func TestTMXLevel(t *testing.T) {
 		t.Error("Level height was not returned correctly.")
 	}
 
-	tile := tmxResource.Level.GetTile(engo.Point{X: 20, Y: 20})
-	expTile := engo.Point{X: 16, Y: 16}
+	tile := tmxResource.Level.GetTile(tango.Point{X: 20, Y: 20})
+	expTile := tango.Point{X: 16, Y: 16}
 	if tile.Point.X != expTile.X || tile.Point.Y != expTile.Y {
 		t.Errorf("Tile was not returned correctly\nWanted: %v\nGot: %v", expTile, tile.Point)
 	}
@@ -675,7 +675,7 @@ func TestTMXLevelIsometric(t *testing.T) {
 	}
 
 	// Load the image
-	err = engo.Files.LoadReaderData("test.png", imgbuf)
+	err = tango.Files.LoadReaderData("test.png", imgbuf)
 	if err != nil {
 		t.Errorf("Unable to load test png. Error was: %v", err)
 	}
@@ -695,28 +695,28 @@ func TestTMXLevelIsometric(t *testing.T) {
 	}
 
 	// Load tmx
-	err = engo.Files.LoadReaderData("test.tmx", buf)
+	err = tango.Files.LoadReaderData("test.tmx", buf)
 	if err != nil {
 		t.Errorf("Unable to load tmx file for testing. Error was: %v", err)
 	}
 
-	resource, err := engo.Files.Resource("test.tmx")
+	resource, err := tango.Files.Resource("test.tmx")
 	if err != nil {
 		t.Errorf("Unable to retrieve resource. Error was: %v", err)
 	}
 	tmxResource := resource.(TMXResource)
 
 	bounds := tmxResource.Level.Bounds()
-	exp := engo.AABB{
-		Min: engo.Point{X: -16, Y: 0},
-		Max: engo.Point{X: 32, Y: 56},
+	exp := tango.AABB{
+		Min: tango.Point{X: -16, Y: 0},
+		Max: tango.Point{X: 32, Y: 56},
 	}
 	if bounds.Min.X != exp.Min.X || bounds.Min.Y != exp.Min.Y || bounds.Max.X != exp.Max.X || bounds.Max.Y != exp.Max.Y {
 		t.Errorf("Bounds was not returned correctly\nWanted: %v\nGot: %v", exp, bounds)
 	}
 
-	tile := tmxResource.Level.GetTile(engo.Point{X: 20, Y: 20})
-	expTile := engo.Point{X: 16, Y: 16}
+	tile := tmxResource.Level.GetTile(tango.Point{X: 20, Y: 20})
+	expTile := tango.Point{X: 16, Y: 16}
 	if tile.Point.X != expTile.X || tile.Point.Y != expTile.Y {
 		t.Errorf("Tile was not returned correctly\nWanted: %v\nGot: %v", expTile, tile.Point)
 	}

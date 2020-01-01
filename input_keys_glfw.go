@@ -1,9 +1,9 @@
 // +build darwin,!arm,!arm64 linux windows
 // +build !ios,!android,!js,!sdl,!headless,!vulkan
 
-package engo
+package tango
 
-import "github.com/go-gl/glfw/v3.2/glfw"
+import "github.com/go-gl/glfw/v3.3/glfw"
 
 const (
 	// KeyGrave represents the '`' keyboard key

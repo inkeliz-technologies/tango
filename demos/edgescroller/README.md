@@ -8,4 +8,4 @@ For doing so, it created a green background. This way, you'll notice the moving.
 ## What are important aspects of the code?
 This line is key in this demo:
 
-* `w.AddSystem(engo.NewEdgeScroller(scrollSpeed, edgeMargin))`, to enable moving the camera around by using the edges of the window.
+* `w.AddSystem(tango.NewEdgeScroller(scrollSpeed, edgeMargin))`, to enable moving the camera around by using the edges of the window.

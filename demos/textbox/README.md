@@ -5,11 +5,11 @@ It demonstrates how one can get user text input and print it to the screen.
 
 ## What are important aspects of the code?
 To listen to the character callbacks from the back-end (glfw, js, etc) subscribe
-to engo.TextMessage
+to tango.TextMessage
 
 ```go
-engo.Mailbox.Listen("TextMessage", func(msg engo.Message) {
-  m, ok := msg.(engo.TextMessage)
+tango.Mailbox.Listen("TextMessage", func(msg tango.Message) {
+  m, ok := msg.(tango.TextMessage)
   if !ok {
     return
   }

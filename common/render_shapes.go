@@ -3,8 +3,8 @@ package common
 import (
 	"image/color"
 
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/gl"
 )
 
 // TriangleType is the type of triangle: Right or Isosceles.
@@ -89,7 +89,7 @@ type ComplexTriangles struct {
 	// Points are the points the form is made of. They should be defined on a scale from 0 to 1, where (0, 0) starts
 	// at the top-left of the area (as defined by the `SpaceComponent`.
 	// You should use a multitude of 3 points, because each triangle is defined by defining 3 points.
-	Points []engo.Point
+	Points []tango.Point
 
 	// BorderWidth indicates the width of the border, around EACH of the Triangles it is made out of
 	BorderWidth float32

@@ -6,9 +6,9 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
@@ -21,10 +21,10 @@ type Guy struct {
 }
 
 func (*DefaultScene) Preload() {
-	engo.Files.Load("icon.png")
+	tango.Files.Load("icon.png")
 }
 
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -43,10 +43,10 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	// Initialize the components, set scale to 8x
 	guy.RenderComponent = common.RenderComponent{
 		Drawable: texture,
-		Scale:    engo.Point{8, 8},
+		Scale:    tango.Point{8, 8},
 	}
 	guy.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{0, 0},
+		Position: tango.Point{0, 0},
 		Width:    texture.Width() * guy.RenderComponent.Scale.X,
 		Height:   texture.Height() * guy.RenderComponent.Scale.Y,
 	}
@@ -63,10 +63,10 @@ func (*DefaultScene) Setup(u engo.Updater) {
 func (*DefaultScene) Type() string { return "GameWorld" }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Hello World Demo",
 		Width:  1024,
 		Height: 640,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

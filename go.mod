@@ -1,9 +1,9 @@
-module github.com/EngoEngine/engo
+module github.com/inkeliz-technologies/tango
 
 require (
-	github.com/EngoEngine/ecs v1.0.3
-	github.com/EngoEngine/gl v1.0.4
-	github.com/EngoEngine/math v1.0.4
+	github.com/inkeliz-technologies/ecs v1.0.3
+	github.com/inkeliz-technologies/tango/gl v1.0.4
+	github.com/inkeliz-technologies/math v1.0.4
 	github.com/Noofbiz/glfwMojaveFix v0.0.1
 	github.com/Noofbiz/sdlMojaveFix v0.0.1
 	github.com/Noofbiz/tmx v0.2.0

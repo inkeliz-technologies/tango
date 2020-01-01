@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/tango"
 	"github.com/Noofbiz/tmx"
 )
 
@@ -33,7 +33,7 @@ func createLevelFromTmx(r io.Reader, tmxURL string) (*Level, error) {
 					tex, err := LoadedSprite(path.Join(path.Dir(tmxURL), i.Source))
 					if err != nil {
 						if strings.HasPrefix(err.Error(), "resource not loaded") {
-							err = engo.Files.Load(path.Join(path.Dir(tmxURL), i.Source))
+							err = tango.Files.Load(path.Join(path.Dir(tmxURL), i.Source))
 							if err != nil {
 								return nil, err
 							}
@@ -51,7 +51,7 @@ func createLevelFromTmx(r io.Reader, tmxURL string) (*Level, error) {
 				_, err := LoadedSprite(path.Join(path.Dir(tmxURL), i.Source))
 				if err != nil {
 					if strings.HasPrefix(err.Error(), "resource not loaded") {
-						err = engo.Files.Load(path.Join(path.Dir(tmxURL), i.Source))
+						err = tango.Files.Load(path.Join(path.Dir(tmxURL), i.Source))
 						if err != nil {
 							return nil, err
 						}
@@ -139,7 +139,7 @@ func createLevelFromTmx(r io.Reader, tmxURL string) (*Level, error) {
 			object.Width = float32(tmxobj.Width)
 			object.Height = float32(tmxobj.Height)
 			object.Properties = getProperties(tmxobj.Properties)
-			object.Tiles = append(object.Tiles, level.tileFromGID(tmxobj.GID, engo.Point{
+			object.Tiles = append(object.Tiles, level.tileFromGID(tmxobj.GID, tango.Point{
 				X: object.X,
 				Y: object.Y,
 			}))
@@ -192,7 +192,7 @@ func createLevelFromTmx(r io.Reader, tmxURL string) (*Level, error) {
 	return level, nil
 }
 
-func pointStringToLines(str string, xOff, yOff float64) []*engo.Line {
+func pointStringToLines(str string, xOff, yOff float64) []*tango.Line {
 	pts := strings.Split(str, " ")
 	floatPts := make([][]float64, len(pts))
 	for i, x := range pts {
@@ -202,7 +202,7 @@ func pointStringToLines(str string, xOff, yOff float64) []*engo.Line {
 		floatPts[i][1], _ = strconv.ParseFloat(pt[1], 64)
 	}
 
-	lines := make([]*engo.Line, len(floatPts)-1)
+	lines := make([]*tango.Line, len(floatPts)-1)
 
 	// Now to globalize line coordinates
 	for i := 0; i < len(floatPts)-1; i++ {
@@ -211,9 +211,9 @@ func pointStringToLines(str string, xOff, yOff float64) []*engo.Line {
 		x2 := float32(floatPts[i+1][0] + xOff)
 		y2 := float32(floatPts[i+1][1] + yOff)
 
-		p1 := engo.Point{X: x1, Y: y1}
-		p2 := engo.Point{X: x2, Y: y2}
-		newLine := &engo.Line{P1: p1, P2: p2}
+		p1 := tango.Point{X: x1, Y: y1}
+		p2 := tango.Point{X: x2, Y: y2}
+		newLine := &tango.Line{P1: p1, P2: p2}
 
 		lines[i] = newLine
 	}
@@ -242,7 +242,7 @@ func (l *Level) unpackTiles(x, y, w, h int, d []tmx.Data) []*Tile {
 
 	for _, data := range d {
 		for _, t := range data.Tiles {
-			tile := l.tileFromGID(t.GID, l.screenPoint(engo.Point{
+			tile := l.tileFromGID(t.GID, l.screenPoint(tango.Point{
 				X: float32(x),
 				Y: float32(y),
 			}))
@@ -288,7 +288,7 @@ func (l *Level) unpackTiles(x, y, w, h int, d []tmx.Data) []*Tile {
 				y += c.Height - 1
 			}
 			for _, t := range c.Tiles {
-				tile := l.tileFromGID(t.GID, l.screenPoint(engo.Point{
+				tile := l.tileFromGID(t.GID, l.screenPoint(tango.Point{
 					X: float32(x),
 					Y: float32(y),
 				}))
@@ -333,7 +333,7 @@ func (l *Level) imageTiles(tmxURL string, imgs []tmx.Image, x, y float32) ([]*Ti
 			tex, err := LoadedSprite(path.Join(path.Dir(tmxURL), i.Source))
 			if err != nil {
 				if strings.HasPrefix(err.Error(), "resource not loaded") {
-					err = engo.Files.Load(path.Join(path.Dir(tmxURL), i.Source))
+					err = tango.Files.Load(path.Join(path.Dir(tmxURL), i.Source))
 					if err != nil {
 						return nil, err
 					}
@@ -344,7 +344,7 @@ func (l *Level) imageTiles(tmxURL string, imgs []tmx.Image, x, y float32) ([]*Ti
 			}
 			tile := &Tile{
 				Image: tex,
-				Point: engo.Point{
+				Point: tango.Point{
 					X: x,
 					Y: y,
 				},
@@ -356,7 +356,7 @@ func (l *Level) imageTiles(tmxURL string, imgs []tmx.Image, x, y float32) ([]*Ti
 	return ret, nil
 }
 
-func (l *Level) tileFromGID(gid uint32, pt engo.Point) *Tile {
+func (l *Level) tileFromGID(gid uint32, pt tango.Point) *Tile {
 	ret := &Tile{}
 	tex := l.resourceMap[gid]
 	ret.Image = &tex

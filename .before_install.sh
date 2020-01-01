@@ -23,7 +23,7 @@ then
     echo "nothing more to add for linux"
 elif [ "$TEST_TYPE" == "traffic_manager" ]
 then
-    go get github.com/EngoEngine/TrafficManager
+    go get github.com/inkeliz-technologies/TrafficManager
 else
     echo "environment variable TEST_TYPE was not set"
 fi

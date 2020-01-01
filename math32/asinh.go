@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Asinh returns the inverse hyperbolic sine of x.
@@ -11,5 +11,5 @@ import (
 //	Asinh(±Inf) = ±Inf
 //	Asinh(NaN) = NaN
 func Asinh(x float32) float32 {
-	return engomath.Asinh(x)
+	return math.Asinh(x)
 }

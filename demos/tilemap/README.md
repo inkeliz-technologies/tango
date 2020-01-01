@@ -6,7 +6,7 @@ It demonstrates how one can load and render a TMX file created from the TileMap 
 ## What are important aspects of the code?
 These lines are key in this demo:
 
-* 'resource, err := engo.Files.Resource("example.tmx")' to retrieve the resource
+* 'resource, err := tango.Files.Resource("example.tmx")' to retrieve the resource
 * 'tmxResource := resource.(common.TMXResource)'to cast the resource to a tmx resource
 * 'levelData := tmxResource.Level' to retrieve the level from the tmx resource
 
@@ -21,7 +21,7 @@ These lines are key in this demo:
                 tile := &Tile{BasicEntity: ecs.NewBasic()}
                 tile.RenderComponent = common.RenderComponent{
                     Drawable: tileElement,
-                    Scale:    engo.Point{1, 1},
+                    Scale:    tango.Point{1, 1},
                 }
                 tile.SpaceComponent = common.SpaceComponent{
                     Position: tileElement.Point,
@@ -43,7 +43,7 @@ These lines are key in this demo:
                 tile := &Tile{BasicEntity: ecs.NewBasic()}
                 tile.RenderComponent = common.RenderComponent{
                     Drawable: imageElement,
-                    Scale:    engo.Point{1, 1},
+                    Scale:    tango.Point{1, 1},
                 }
                 tile.SpaceComponent = common.SpaceComponent{
                     Position: imageElement.Point,

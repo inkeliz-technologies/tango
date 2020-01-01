@@ -6,9 +6,9 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type GameWorld struct{}
@@ -21,23 +21,23 @@ type Tile struct {
 
 func (game *GameWorld) Preload() {
 	// A tmx file can be generated from the Tiled Map Editor.
-	// The engo tmx loader only accepts tmx files that are base64 encoded and compressed with zlib.
-	// When you add tilesets to the Tiled Editor, the location where you added them from is where the engo loader will look for them
+	// The tango tmx loader only accepts tmx files that are base64 encoded and compressed with zlib.
+	// When you add tilesets to the Tiled Editor, the location where you added them from is where the tango loader will look for them
 	// Tileset from : http://opengameart.org
 
-	if err := engo.Files.Load("example.tmx"); err != nil {
+	if err := tango.Files.Load("example.tmx"); err != nil {
 		panic(err)
 	}
 }
 
-func (game *GameWorld) Setup(u engo.Updater) {
+func (game *GameWorld) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
 
 	w.AddSystem(&common.RenderSystem{})
 
-	resource, err := engo.Files.Resource("example.tmx")
+	resource, err := tango.Files.Resource("example.tmx")
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +54,7 @@ func (game *GameWorld) Setup(u engo.Updater) {
 				tile := &Tile{BasicEntity: ecs.NewBasic()}
 				tile.RenderComponent = common.RenderComponent{
 					Drawable: tileElement,
-					Scale:    engo.Point{1, 1},
+					Scale:    tango.Point{1, 1},
 				}
 				tile.RenderComponent.SetZIndex(float32(idx))
 				tile.SpaceComponent = common.SpaceComponent{
@@ -75,7 +75,7 @@ func (game *GameWorld) Setup(u engo.Updater) {
 				tile := &Tile{BasicEntity: ecs.NewBasic()}
 				tile.RenderComponent = common.RenderComponent{
 					Drawable: imageElement,
-					Scale:    engo.Point{1, 1},
+					Scale:    tango.Point{1, 1},
 				}
 				tile.SpaceComponent = common.SpaceComponent{
 					Position: imageElement.Point,
@@ -113,10 +113,10 @@ func (game *GameWorld) Setup(u engo.Updater) {
 func (game *GameWorld) Type() string { return "GameWorld" }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "TileMap Demo",
 		Width:  800,
 		Height: 800,
 	}
-	engo.Run(opts, &GameWorld{})
+	tango.Run(opts, &GameWorld{})
 }

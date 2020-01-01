@@ -1,9 +1,9 @@
 package common
 
 import (
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/math"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/math32"
+	"github.com/inkeliz-technologies/tango/gl"
 )
 
 const (
@@ -150,7 +150,7 @@ type TMXCircle struct {
 // TMXLine is a line from the tmx map
 // TODO: create a tile or render coponent instead?
 type TMXLine struct {
-	Lines []*engo.Line
+	Lines []*tango.Line
 	Type  string
 }
 
@@ -172,55 +172,55 @@ type TMXText struct {
 	CharData   string
 }
 
-// Bounds returns the level boundaries as an engo.AABB object
-func (l *Level) Bounds() engo.AABB {
+// Bounds returns the level boundaries as an tango.AABB object
+func (l *Level) Bounds() tango.AABB {
 	switch l.Orientation {
 	case orth:
-		return engo.AABB{
-			Min: l.screenPoint(engo.Point{X: 0, Y: 0}),
-			Max: l.screenPoint(engo.Point{X: float32(l.width), Y: float32(l.height)}),
+		return tango.AABB{
+			Min: l.screenPoint(tango.Point{X: 0, Y: 0}),
+			Max: l.screenPoint(tango.Point{X: float32(l.width), Y: float32(l.height)}),
 		}
 	case iso:
-		xMin := l.screenPoint(engo.Point{X: 0, Y: float32(l.height)}).X + float32(l.TileWidth)/2
-		xMax := l.screenPoint(engo.Point{X: float32(l.width), Y: 0}).X + float32(l.TileWidth)/2
-		yMin := l.screenPoint(engo.Point{X: 0, Y: 0}).Y
-		yMax := l.screenPoint(engo.Point{X: float32(l.width), Y: float32(l.height)}).Y + float32(l.TileHeight)/2
-		return engo.AABB{
-			Min: engo.Point{X: xMin, Y: yMin},
-			Max: engo.Point{X: xMax, Y: yMax},
+		xMin := l.screenPoint(tango.Point{X: 0, Y: float32(l.height)}).X + float32(l.TileWidth)/2
+		xMax := l.screenPoint(tango.Point{X: float32(l.width), Y: 0}).X + float32(l.TileWidth)/2
+		yMin := l.screenPoint(tango.Point{X: 0, Y: 0}).Y
+		yMax := l.screenPoint(tango.Point{X: float32(l.width), Y: float32(l.height)}).Y + float32(l.TileHeight)/2
+		return tango.AABB{
+			Min: tango.Point{X: xMin, Y: yMin},
+			Max: tango.Point{X: xMax, Y: yMax},
 		}
 	}
-	return engo.AABB{}
+	return tango.AABB{}
 }
 
 // mapPoint returns the map point of the passed in screen point
-func (l *Level) mapPoint(screenPt engo.Point) engo.Point {
+func (l *Level) mapPoint(screenPt tango.Point) tango.Point {
 	switch l.Orientation {
 	case orth:
-		screenPt.Multiply(engo.Point{X: 1 / float32(l.TileWidth), Y: 1 / float32(l.TileHeight)})
+		screenPt.Multiply(tango.Point{X: 1 / float32(l.TileWidth), Y: 1 / float32(l.TileHeight)})
 		return screenPt
 	case iso:
-		return engo.Point{
+		return tango.Point{
 			X: (screenPt.X / float32(l.TileWidth)) + (screenPt.Y / float32(l.TileHeight)),
 			Y: (screenPt.Y / float32(l.TileHeight)) - (screenPt.X / float32(l.TileWidth)),
 		}
 	}
-	return engo.Point{X: 0, Y: 0}
+	return tango.Point{X: 0, Y: 0}
 }
 
 // screenPoint returns the screen point of the passed in map point
-func (l *Level) screenPoint(mapPt engo.Point) engo.Point {
+func (l *Level) screenPoint(mapPt tango.Point) tango.Point {
 	switch l.Orientation {
 	case orth:
-		mapPt.Multiply(engo.Point{X: float32(l.TileWidth), Y: float32(l.TileHeight)})
+		mapPt.Multiply(tango.Point{X: float32(l.TileWidth), Y: float32(l.TileHeight)})
 		return mapPt
 	case iso:
-		return engo.Point{
+		return tango.Point{
 			X: (mapPt.X - mapPt.Y) * float32(l.TileWidth) / 2,
 			Y: (mapPt.X + mapPt.Y) * float32(l.TileHeight) / 2,
 		}
 	}
-	return engo.Point{X: 0, Y: 0}
+	return tango.Point{X: 0, Y: 0}
 }
 
 type mapPoint struct {
@@ -228,10 +228,10 @@ type mapPoint struct {
 }
 
 // GetTile returns a *Tile at the given point (in space / render coordinates).
-func (l *Level) GetTile(pt engo.Point) *Tile {
+func (l *Level) GetTile(pt tango.Point) *Tile {
 	mp := l.mapPoint(pt)
-	x := int(math.Floor(mp.X))
-	y := int(math.Floor(mp.Y))
+	x := int(math32.Floor(mp.X))
+	y := int(math32.Floor(mp.Y))
 	t, ok := l.pointMap[mapPoint{X: x, Y: y}]
 	if !ok {
 		return nil
@@ -276,6 +276,6 @@ func (t *Tile) View() (float32, float32, float32, float32) {
 
 // Tile represents a tile in the TMX map.
 type Tile struct {
-	engo.Point
+	tango.Point
 	Image *Texture
 }

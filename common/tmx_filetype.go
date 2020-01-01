@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/tango"
 )
 
 // TMXResource contains a level created from a Tile Map XML
@@ -19,7 +19,7 @@ func (r TMXResource) URL() string {
 	return r.url
 }
 
-// tmxLoader is responsible for managing '.tmx' files within 'engo.Files'.
+// tmxLoader is responsible for managing '.tmx' files within 'tango.Files'.
 // You can generate a TMX file with the Tiled map editor.
 type tmxLoader struct {
 	levels map[string]TMXResource
@@ -43,7 +43,7 @@ func (t *tmxLoader) Unload(url string) error {
 }
 
 // Resource retrieves and returns the preloaded level of type 'TMXResource'
-func (t *tmxLoader) Resource(url string) (engo.Resource, error) {
+func (t *tmxLoader) Resource(url string) (tango.Resource, error) {
 	tmx, ok := t.levels[url]
 	if !ok {
 		return nil, fmt.Errorf("resource not loaded by `FileLoader`: %q", url)
@@ -53,5 +53,5 @@ func (t *tmxLoader) Resource(url string) (engo.Resource, error) {
 }
 
 func init() {
-	engo.Files.Register(".tmx", &tmxLoader{levels: make(map[string]TMXResource)})
+	tango.Files.Register(".tmx", &tmxLoader{levels: make(map[string]TMXResource)})
 }

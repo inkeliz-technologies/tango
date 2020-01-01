@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/gl"
 )
 
 type TestDrawable struct {
@@ -274,7 +274,7 @@ func (*TestAnimationScene) Type() string { return "TestAnimationScene" }
 
 func (*TestAnimationScene) Preload() {}
 
-func (t *TestAnimationScene) Setup(u engo.Updater) {
+func (t *TestAnimationScene) Setup(u tango.Updater) {
 	t.w = u.(*ecs.World)
 
 	t.w.AddSystem(&AnimationSystem{})
@@ -389,7 +389,7 @@ func TestAnimationSystemIntegration(t *testing.T) {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
 	s := TestAnimationScene{}
-	engo.Run(engo.RunOptions{
+	tango.Run(tango.RunOptions{
 		HeadlessMode: true,
 		NoRun:        true,
 	}, &s)

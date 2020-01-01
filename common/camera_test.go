@@ -6,17 +6,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
 	"github.com/stretchr/testify/assert"
 )
 
 var cam *CameraSystem
 
 func initialize() {
-	engo.Mailbox = &engo.MessageManager{}
-	CameraBounds = engo.AABB{Min: engo.Point{X: 0, Y: 0}, Max: engo.Point{X: 300, Y: 300}}
-	engo.SetGlobalScale(engo.Point{X: 1, Y: 1})
+	tango.Mailbox = &tango.MessageManager{}
+	CameraBounds = tango.AABB{Min: tango.Point{X: 0, Y: 0}, Max: tango.Point{X: 300, Y: 300}}
+	tango.SetGlobalScale(tango.Point{X: 1, Y: 1})
 	w := &ecs.World{}
 
 	cam = &CameraSystem{}
@@ -168,8 +168,8 @@ func TestCameraAddOnlyOne(t *testing.T) {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
 
-	engo.Mailbox = &engo.MessageManager{}
-	CameraBounds = engo.AABB{Min: engo.Point{X: 0, Y: 0}, Max: engo.Point{X: 300, Y: 300}}
+	tango.Mailbox = &tango.MessageManager{}
+	CameraBounds = tango.AABB{Min: tango.Point{X: 0, Y: 0}, Max: tango.Point{X: 300, Y: 300}}
 	w := &ecs.World{}
 
 	w.AddSystem(&CameraSystem{})

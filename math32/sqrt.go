@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Sqrt returns the square root of x.
@@ -12,5 +12,5 @@ import (
 //	Sqrt(x < 0) = NaN
 //	Sqrt(NaN) = NaN
 func Sqrt(x float32) float32 {
-	return engomath.Sqrt(x)
+	return math.Sqrt(x)
 }

@@ -1,4 +1,4 @@
-package math
+package math32
 
 // Mathematical constants.
 // Reference: http://oeis.org/Axxxxxx

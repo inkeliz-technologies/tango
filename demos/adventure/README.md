@@ -1,7 +1,7 @@
 # Adventure Demo
 
 ## What does it do?
-* It applies various different things from multiple engo demos
+* It applies various different things from multiple tango demos
 * It demonstrates how one can load and render a TMX file created from the TileMap Editor
 * It shows how to add a character entity
   * It demonstrates how to animate the character and move it around
@@ -30,7 +30,7 @@ for _, tileLayer := range levelData.TileLayers {
             tile := &Tile{BasicEntity: ecs.NewBasic()}
             tile.RenderComponent = common.RenderComponent{
                 Drawable: tileElement,
-                Scale:    engo.Point{1, 1},
+                Scale:    tango.Point{1, 1},
             }
             tile.SpaceComponent = common.SpaceComponent{
                 Position: tileElement.Point,
@@ -61,7 +61,7 @@ for _, imageLayer := range levelData.ImageLayers {
             tile := &Tile{BasicEntity: ecs.NewBasic()}
             tile.RenderComponent = common.RenderComponent{
                 Drawable: imageElement,
-                Scale:    engo.Point{1, 1},
+                Scale:    tango.Point{1, 1},
             }
             tile.SpaceComponent = common.SpaceComponent{
                 Position: imageElement.Point,

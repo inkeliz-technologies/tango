@@ -1,7 +1,7 @@
 // +build darwin,!arm,!arm64 linux windows
 // +build !ios,!android,!js,!sdl,!headless,!vulkan
 
-package engo
+package tango
 
 import (
 	"io"
@@ -12,14 +12,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/EngoEngine/gl"
-	"github.com/go-gl/glfw/v3.2/glfw"
-
-	"github.com/Noofbiz/glfwMojaveFix"
+	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/inkeliz-technologies/tango/gl"
 )
 
 var (
-	// Window is the glfw.Window used for engo
+	// Window is the glfw.Window used for tango
 	Window *glfw.Window
 	// Gl is the current OpenGL context
 	Gl *gl.Context
@@ -243,7 +241,6 @@ func RunIteration() {
 		Input.Mouse.ScrollX, Input.Mouse.ScrollY = 0, 0
 		Input.Mouse.Action = Neutral
 
-		glfwMojaveFix.UpdateNSGLContext(*Window)
 		Window.SwapBuffers()
 	}
 }

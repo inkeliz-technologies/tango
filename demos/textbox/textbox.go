@@ -6,9 +6,9 @@ import (
 	"image/color"
 	"sync"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
@@ -20,16 +20,16 @@ type MyLabel struct {
 }
 
 func (*DefaultScene) Preload() {
-	err := engo.Files.Load("Roboto-Regular.ttf")
+	err := tango.Files.Load("Roboto-Regular.ttf")
 	if err != nil {
 		panic(err)
 	}
-	engo.Input.RegisterButton("backspace", engo.KeyBackspace)
-	engo.Input.RegisterButton("enter", engo.KeyEnter)
+	tango.Input.RegisterButton("backspace", tango.KeyBackspace)
+	tango.Input.RegisterButton("enter", tango.KeyEnter)
 }
 
 // Setup is called before the main loop is started
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -94,8 +94,8 @@ func (t *TypingSystem) New(w *ecs.World) {
 		}
 	}
 
-	engo.Mailbox.Listen("TextMessage", func(msg engo.Message) {
-		m, ok := msg.(engo.TextMessage)
+	tango.Mailbox.Listen("TextMessage", func(msg tango.Message) {
+		m, ok := msg.(tango.TextMessage)
 		if !ok {
 			return
 		}
@@ -111,7 +111,7 @@ func (t *TypingSystem) Update(dt float32) {
 	t.timeSinceDeletion += dt
 	str := ""
 	txt := t.label.Drawable.(common.Text)
-	if engo.Input.Button("backspace").Down() && len(txt.Text) > 0 {
+	if tango.Input.Button("backspace").Down() && len(txt.Text) > 0 {
 		if t.timeSinceDeletion > 0.2 {
 			t.timeSinceDeletion = 0
 			txt.Text = txt.Text[:len(txt.Text)-1]
@@ -126,17 +126,17 @@ func (t *TypingSystem) Update(dt float32) {
 	t.runesToAdd = make([]rune, 0)
 	t.runeLock.Unlock()
 	txt.Text += str
-	if engo.Input.Button("enter").JustPressed() {
+	if tango.Input.Button("enter").JustPressed() {
 		txt.Text += "\n"
 	}
 	t.label.Drawable = txt
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Typing Demo",
 		Width:  800,
 		Height: 800,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

@@ -5,9 +5,9 @@ package main
 import (
 	"image/color"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
@@ -29,14 +29,14 @@ type MyShape struct {
 func (*DefaultScene) Preload() {}
 
 // Setup is called before the main loop is started
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.RGBA{55, 55, 55, 255})
 	w.AddSystem(&common.RenderSystem{})
 
 	// Adding camera controllers so we can verify it doesn't break when we move
-	w.AddSystem(common.NewKeyboardScroller(scrollSpeed, engo.DefaultHorizontalAxis, engo.DefaultVerticalAxis))
+	w.AddSystem(common.NewKeyboardScroller(scrollSpeed, tango.DefaultHorizontalAxis, tango.DefaultVerticalAxis))
 	w.AddSystem(&common.MouseZoomer{zoomSpeed})
 	w.AddSystem(&common.MouseRotator{RotationSpeed: 0.125})
 
@@ -52,7 +52,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	rectangle1 := MyShape{BasicEntity: ecs.NewBasic()}
-	rectangle1.SpaceComponent = common.SpaceComponent{Position: engo.Point{100, 100}, Width: 100, Height: 100}
+	rectangle1.SpaceComponent = common.SpaceComponent{Position: tango.Point{100, 100}, Width: 100, Height: 100}
 	rectangle1.RenderComponent = common.RenderComponent{Drawable: common.Rectangle{}, Color: color.RGBA{0, 255, 0, 255}}
 
 	for _, system := range w.Systems() {
@@ -63,7 +63,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	circle1 := MyShape{BasicEntity: ecs.NewBasic()}
-	circle1.SpaceComponent = common.SpaceComponent{Position: engo.Point{200, 200}, Width: 100, Height: 100}
+	circle1.SpaceComponent = common.SpaceComponent{Position: tango.Point{200, 200}, Width: 100, Height: 100}
 	circle1.RenderComponent = common.RenderComponent{Drawable: common.Circle{}, Color: color.RGBA{0, 0, 255, 255}}
 
 	for _, system := range w.Systems() {
@@ -74,7 +74,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	triangle2 := MyShape{BasicEntity: ecs.NewBasic()}
-	triangle2.SpaceComponent = common.SpaceComponent{Position: engo.Point{300, 300}, Width: 100, Height: 100}
+	triangle2.SpaceComponent = common.SpaceComponent{Position: tango.Point{300, 300}, Width: 100, Height: 100}
 	triangle2.RenderComponent = common.RenderComponent{Drawable: common.Triangle{TriangleType: common.TriangleRight}, Color: color.RGBA{255, 255, 0, 255}}
 
 	for _, system := range w.Systems() {
@@ -85,7 +85,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	line1 := MyShape{BasicEntity: ecs.NewBasic()}
-	line1.SpaceComponent = common.SpaceComponent{Position: engo.Point{400, 400}, Width: 1, Height: 100}
+	line1.SpaceComponent = common.SpaceComponent{Position: tango.Point{400, 400}, Width: 1, Height: 100}
 	line1.RenderComponent = common.RenderComponent{Drawable: common.Rectangle{}, Color: color.RGBA{0, 255, 255, 255}}
 
 	for _, system := range w.Systems() {
@@ -96,9 +96,9 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	complexTriangle1 := MyShape{BasicEntity: ecs.NewBasic()}
-	complexTriangle1.SpaceComponent = common.SpaceComponent{Position: engo.Point{500, 500}, Width: 100, Height: 100}
+	complexTriangle1.SpaceComponent = common.SpaceComponent{Position: tango.Point{500, 500}, Width: 100, Height: 100}
 	complexTriangle1.RenderComponent = common.RenderComponent{Drawable: common.ComplexTriangles{
-		Points: []engo.Point{
+		Points: []tango.Point{
 			{0.0, 0.0}, {1.0, 0.25}, {0.5, 0.5},
 			{0.5, 0.5}, {1.0, 0.75}, {0.0, 1.0},
 			{0.0, 0.0}, {0.5, 0.50}, {0.0, 1.0},
@@ -112,7 +112,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	triangle3 := MyShape{BasicEntity: ecs.NewBasic()}
-	triangle3.SpaceComponent = common.SpaceComponent{Position: engo.Point{23, 123}, Width: 50, Height: 50}
+	triangle3.SpaceComponent = common.SpaceComponent{Position: tango.Point{23, 123}, Width: 50, Height: 50}
 	triangle3.RenderComponent = common.RenderComponent{Drawable: common.Triangle{BorderWidth: 1, BorderColor: color.White}, Color: color.RGBA{255, 0, 0, 255}}
 
 	for _, system := range w.Systems() {
@@ -123,7 +123,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	rectangle2 := MyShape{BasicEntity: ecs.NewBasic()}
-	rectangle2.SpaceComponent = common.SpaceComponent{Position: engo.Point{123, 223}, Width: 50, Height: 50}
+	rectangle2.SpaceComponent = common.SpaceComponent{Position: tango.Point{123, 223}, Width: 50, Height: 50}
 	rectangle2.RenderComponent = common.RenderComponent{Drawable: common.Rectangle{BorderWidth: 1, BorderColor: color.White}, Color: color.RGBA{0, 255, 0, 255}}
 
 	for _, system := range w.Systems() {
@@ -134,7 +134,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	circle2 := MyShape{BasicEntity: ecs.NewBasic()}
-	circle2.SpaceComponent = common.SpaceComponent{Position: engo.Point{223, 323}, Width: 50, Height: 50}
+	circle2.SpaceComponent = common.SpaceComponent{Position: tango.Point{223, 323}, Width: 50, Height: 50}
 	circle2.RenderComponent = common.RenderComponent{Drawable: common.Circle{BorderWidth: 1, BorderColor: color.White}, Color: color.RGBA{0, 0, 255, 255}}
 
 	for _, system := range w.Systems() {
@@ -145,7 +145,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	triangle4 := MyShape{BasicEntity: ecs.NewBasic()}
-	triangle4.SpaceComponent = common.SpaceComponent{Position: engo.Point{323, 423}, Width: 50, Height: 50}
+	triangle4.SpaceComponent = common.SpaceComponent{Position: tango.Point{323, 423}, Width: 50, Height: 50}
 	triangle4.RenderComponent = common.RenderComponent{Drawable: common.Triangle{TriangleType: common.TriangleRight, BorderWidth: 1, BorderColor: color.White}, Color: color.RGBA{255, 255, 0, 255}}
 
 	for _, system := range w.Systems() {
@@ -156,10 +156,10 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	}
 
 	complexTriangle2 := MyShape{BasicEntity: ecs.NewBasic()}
-	complexTriangle2.SpaceComponent = common.SpaceComponent{Position: engo.Point{523, 623}, Width: 50, Height: 50}
+	complexTriangle2.SpaceComponent = common.SpaceComponent{Position: tango.Point{523, 623}, Width: 50, Height: 50}
 	complexTriangle2.RenderComponent = common.RenderComponent{Drawable: common.ComplexTriangles{
 		BorderWidth: 1, BorderColor: color.White,
-		Points: []engo.Point{
+		Points: []tango.Point{
 			{0.0, 0.0}, {1.0, 0.25}, {0.5, 0.5},
 			{0.5, 0.5}, {1.0, 0.75}, {0.0, 1.0},
 			{0.0, 0.0}, {0.5, 0.50}, {0.0, 1.0},
@@ -176,12 +176,12 @@ func (*DefaultScene) Setup(u engo.Updater) {
 func (*DefaultScene) Type() string { return "Game" }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:          "Shapes Demo",
 		Width:          worldWidth,
 		Height:         worldHeight,
 		StandardInputs: true,
 		MSAA:           4, // This one is not mandatory, but makes the shapes look so much better when rotating the camera
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

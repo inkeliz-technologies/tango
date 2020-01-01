@@ -7,9 +7,9 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type Guy struct {
@@ -29,13 +29,13 @@ type Rock struct {
 type DefaultScene struct{}
 
 func (*DefaultScene) Preload() {
-	err := engo.Files.Load("icon.png", "rock.png")
+	err := tango.Files.Load("icon.png", "rock.png")
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -59,10 +59,10 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	// Initialize the components, set scale to 4x
 	guy.RenderComponent = common.RenderComponent{
 		Drawable: texture,
-		Scale:    engo.Point{4, 4},
+		Scale:    tango.Point{4, 4},
 	}
 	guy.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{0, 0},
+		Position: tango.Point{0, 0},
 		Width:    texture.Width() * guy.RenderComponent.Scale.X,
 		Height:   texture.Height() * guy.RenderComponent.Scale.Y,
 	}
@@ -115,10 +115,10 @@ func (c *ControlSystem) Update(dt float32) {
 	speed := 400 * dt
 
 	for _, e := range c.entities {
-		hori := engo.Input.Axis(engo.DefaultHorizontalAxis)
+		hori := tango.Input.Axis(tango.DefaultHorizontalAxis)
 		e.SpaceComponent.Position.X += speed * hori.Value()
 
-		vert := engo.Input.Axis(engo.DefaultVerticalAxis)
+		vert := tango.Input.Axis(tango.DefaultVerticalAxis)
 		e.SpaceComponent.Position.Y += speed * vert.Value()
 	}
 }
@@ -139,14 +139,14 @@ func (rock *RockSpawnSystem) Update(dt float32) {
 		return
 	}
 
-	position := engo.Point{
-		X: rand.Float32() * engo.GameWidth(),
+	position := tango.Point{
+		X: rand.Float32() * tango.GameWidth(),
 		Y: -32,
 	}
 	NewRock(rock.world, position)
 }
 
-func NewRock(world *ecs.World, position engo.Point) {
+func NewRock(world *ecs.World, position tango.Point) {
 	texture, err := common.LoadedSprite("rock.png")
 	if err != nil {
 		log.Println(err)
@@ -155,7 +155,7 @@ func NewRock(world *ecs.World, position engo.Point) {
 	rock := Rock{BasicEntity: ecs.NewBasic()}
 	rock.RenderComponent = common.RenderComponent{
 		Drawable: texture,
-		Scale:    engo.Point{4, 4},
+		Scale:    tango.Point{4, 4},
 	}
 	rock.SpaceComponent = common.SpaceComponent{
 		Position: position,
@@ -214,7 +214,7 @@ type DeathSystem struct{}
 
 func (*DeathSystem) New(*ecs.World) {
 	// Subscribe to ScoreMessage
-	engo.Mailbox.Listen("CollisionMessage", func(message engo.Message) {
+	tango.Mailbox.Listen("CollisionMessage", func(message tango.Message) {
 		_, isCollision := message.(common.CollisionMessage)
 
 		if isCollision {
@@ -227,12 +227,12 @@ func (*DeathSystem) Remove(ecs.BasicEntity) {}
 func (*DeathSystem) Update(float32)         {}
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:          "Falling Demo",
 		Width:          1024,
 		Height:         640,
 		StandardInputs: true,
 	}
 
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

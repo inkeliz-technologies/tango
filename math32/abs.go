@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Abs returns the absolute value of x.
@@ -10,5 +10,5 @@ import (
 //	Abs(±Inf) = +Inf
 //	Abs(NaN) = NaN
 func Abs(x float32) float32 {
-	return engomath.Abs(x)
+	return math.Abs(x)
 }

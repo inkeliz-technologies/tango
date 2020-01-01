@@ -1,4 +1,4 @@
-package engo
+package tango
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/EngoEngine/ecs"
+	"github.com/inkeliz-technologies/ecs"
 )
 
 type testScene struct{}
@@ -34,7 +34,7 @@ func (*testScene2) Show() {
 	log.Println("Showing testScene2.")
 }
 
-// The tests for engo.go all have to use the headless option. Non-headless stuff is not
+// The tests for tango.go all have to use the headless option. Non-headless stuff is not
 // testable via the cl only, and those are taken care of by building the demos via Travis CI
 func TestRunHeadlessNoRunDefaults(t *testing.T) {
 	Run(RunOptions{

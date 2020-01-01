@@ -6,9 +6,9 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
@@ -21,13 +21,13 @@ type Guy struct {
 }
 
 func (*DefaultScene) Preload() {
-	err := engo.Files.Load("icon.png")
+	err := tango.Files.Load("icon.png")
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -38,7 +38,7 @@ func (*DefaultScene) Setup(u engo.Updater) {
 
 	// These are not required, but allow you to move / rotate and still see that it works
 	w.AddSystem(&common.MouseZoomer{-0.125})
-	w.AddSystem(common.NewKeyboardScroller(500, engo.DefaultHorizontalAxis, engo.DefaultVerticalAxis))
+	w.AddSystem(common.NewKeyboardScroller(500, tango.DefaultHorizontalAxis, tango.DefaultVerticalAxis))
 	w.AddSystem(&common.MouseRotator{RotationSpeed: 0.125})
 
 	// Retrieve a texture
@@ -53,10 +53,10 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	// Initialize the components, set scale to 8x
 	guy.RenderComponent = common.RenderComponent{
 		Drawable: texture,
-		Scale:    engo.Point{8, 8},
+		Scale:    tango.Point{8, 8},
 	}
 	guy.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{200, 200},
+		Position: tango.Point{200, 200},
 		Width:    texture.Width() * guy.RenderComponent.Scale.X,
 		Height:   texture.Height() * guy.RenderComponent.Scale.Y,
 		Rotation: 90,
@@ -107,18 +107,18 @@ func (c *ControlSystem) Remove(basic ecs.BasicEntity) {
 func (c *ControlSystem) Update(float32) {
 	for _, e := range c.entities {
 		if e.MouseComponent.Enter {
-			engo.SetCursor(engo.CursorHand)
+			tango.SetCursor(tango.CursorHand)
 		} else if e.MouseComponent.Leave {
-			engo.SetCursor(engo.CursorNone)
+			tango.SetCursor(tango.CursorNone)
 		}
 	}
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Mouse Demo",
 		Width:  1024,
 		Height: 640,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

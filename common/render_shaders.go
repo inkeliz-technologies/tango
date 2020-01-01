@@ -7,10 +7,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/math"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/math32"
+	"github.com/inkeliz-technologies/tango/gl"
 )
 
 // UnicodeCap is the amount of unicode characters the fonts will be able to use, starting from index 0.
@@ -107,11 +107,11 @@ type basicShader struct {
 
 	matrixProjView *gl.UniformLocation
 
-	projectionMatrix *engo.Matrix
-	viewMatrix       *engo.Matrix
-	projViewMatrix   *engo.Matrix
-	modelMatrix      *engo.Matrix
-	cullingMatrix    *engo.Matrix
+	projectionMatrix *tango.Matrix
+	viewMatrix       *tango.Matrix
+	projViewMatrix   *tango.Matrix
+	modelMatrix      *tango.Matrix
+	cullingMatrix    *tango.Matrix
 
 	projViewChange bool
 
@@ -130,7 +130,7 @@ func (s *basicShader) Setup(w *ecs.World) error {
 	}
 	// Create the vertex buffer for batching.
 	s.vertices = make([]float32, s.BatchSize*spriteSize)
-	s.vertexBuffer = engo.Gl.CreateBuffer()
+	s.vertexBuffer = tango.Gl.CreateBuffer()
 	// Create and populate indices buffer. The size of the buffer depends on the batch size.
 	// These should never change, so we can just initialize them once here and be done with it.
 	numIndicies := s.BatchSize * 6
@@ -148,21 +148,21 @@ func (s *basicShader) Setup(w *ecs.World) error {
 	if err != nil {
 		return err
 	}
-	s.indexBuffer = engo.Gl.CreateBuffer()
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, s.indexBuffer)
-	engo.Gl.BufferData(engo.Gl.ELEMENT_ARRAY_BUFFER, s.indices, engo.Gl.STATIC_DRAW)
+	s.indexBuffer = tango.Gl.CreateBuffer()
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, s.indexBuffer)
+	tango.Gl.BufferData(tango.Gl.ELEMENT_ARRAY_BUFFER, s.indices, tango.Gl.STATIC_DRAW)
 
-	s.inPosition = engo.Gl.GetAttribLocation(s.program, "in_Position")
-	s.inTexCoords = engo.Gl.GetAttribLocation(s.program, "in_TexCoords")
-	s.inColor = engo.Gl.GetAttribLocation(s.program, "in_Color")
+	s.inPosition = tango.Gl.GetAttribLocation(s.program, "in_Position")
+	s.inTexCoords = tango.Gl.GetAttribLocation(s.program, "in_TexCoords")
+	s.inColor = tango.Gl.GetAttribLocation(s.program, "in_Color")
 
-	s.matrixProjView = engo.Gl.GetUniformLocation(s.program, "matrixProjView")
+	s.matrixProjView = tango.Gl.GetUniformLocation(s.program, "matrixProjView")
 
-	s.projectionMatrix = engo.IdentityMatrix()
-	s.viewMatrix = engo.IdentityMatrix()
-	s.projViewMatrix = engo.IdentityMatrix()
-	s.modelMatrix = engo.IdentityMatrix()
-	s.cullingMatrix = engo.IdentityMatrix()
+	s.projectionMatrix = tango.IdentityMatrix()
+	s.viewMatrix = tango.IdentityMatrix()
+	s.projViewMatrix = tango.IdentityMatrix()
+	s.modelMatrix = tango.IdentityMatrix()
+	s.cullingMatrix = tango.IdentityMatrix()
 
 	s.setTexture(nil)
 
@@ -170,14 +170,14 @@ func (s *basicShader) Setup(w *ecs.World) error {
 }
 
 func (s *basicShader) Pre() {
-	engo.Gl.Enable(engo.Gl.BLEND)
-	engo.Gl.BlendFunc(engo.Gl.SRC_ALPHA, engo.Gl.ONE_MINUS_SRC_ALPHA)
+	tango.Gl.Enable(tango.Gl.BLEND)
+	tango.Gl.BlendFunc(tango.Gl.SRC_ALPHA, tango.Gl.ONE_MINUS_SRC_ALPHA)
 	// Enable shader and buffer, enable attributes in shader
-	engo.Gl.UseProgram(s.program)
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, s.indexBuffer)
-	engo.Gl.EnableVertexAttribArray(s.inPosition)
-	engo.Gl.EnableVertexAttribArray(s.inTexCoords)
-	engo.Gl.EnableVertexAttribArray(s.inColor)
+	tango.Gl.UseProgram(s.program)
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, s.indexBuffer)
+	tango.Gl.EnableVertexAttribArray(s.inPosition)
+	tango.Gl.EnableVertexAttribArray(s.inTexCoords)
+	tango.Gl.EnableVertexAttribArray(s.inColor)
 
 	// The matrixProjView shader uniform is projection * view.
 	// We do the multiplication on the CPU instead of sending each matrix to the shader and letting the GPU do the multiplication,
@@ -187,23 +187,23 @@ func (s *basicShader) Pre() {
 		s.projViewMatrix = s.projectionMatrix.Multiply(s.viewMatrix)
 		s.projViewChange = false
 	}
-	engo.Gl.UniformMatrix3fv(s.matrixProjView, false, s.projViewMatrix.Val[:])
+	tango.Gl.UniformMatrix3fv(s.matrixProjView, false, s.projViewMatrix.Val[:])
 
 	// Since we are batching client side, we only have one VBO, so we can just bind it now and use it for the entire frame.
-	engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, s.vertexBuffer)
-	engo.Gl.VertexAttribPointer(s.inPosition, 2, engo.Gl.FLOAT, false, 20, 0)
-	engo.Gl.VertexAttribPointer(s.inTexCoords, 2, engo.Gl.FLOAT, false, 20, 8)
-	engo.Gl.VertexAttribPointer(s.inColor, 4, engo.Gl.UNSIGNED_BYTE, true, 20, 16)
+	tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, s.vertexBuffer)
+	tango.Gl.VertexAttribPointer(s.inPosition, 2, tango.Gl.FLOAT, false, 20, 0)
+	tango.Gl.VertexAttribPointer(s.inTexCoords, 2, tango.Gl.FLOAT, false, 20, 8)
+	tango.Gl.VertexAttribPointer(s.inColor, 4, tango.Gl.UNSIGNED_BYTE, true, 20, 16)
 }
 
 func (s *basicShader) PrepareCulling() {
 	s.projViewChange = true
 	// (Re)initialize the projection matrix.
 	s.projectionMatrix.Identity()
-	if engo.ScaleOnResize() {
-		s.projectionMatrix.Scale(1/(engo.GameWidth()/2), 1/(-engo.GameHeight()/2))
+	if tango.ScaleOnResize() {
+		s.projectionMatrix.Scale(1/(tango.GameWidth()/2), 1/(-tango.GameHeight()/2))
 	} else {
-		s.projectionMatrix.Scale(1/(engo.CanvasWidth()/(2*engo.CanvasScale())), 1/(-engo.CanvasHeight()/(2*engo.CanvasScale())))
+		s.projectionMatrix.Scale(1/(tango.CanvasWidth()/(2*tango.CanvasScale())), 1/(-tango.CanvasHeight()/(2*tango.CanvasScale())))
 	}
 	// (Re)initialize the view matrix
 	s.viewMatrix.Identity()
@@ -216,7 +216,7 @@ func (s *basicShader) PrepareCulling() {
 	}
 	s.cullingMatrix.Identity()
 	s.cullingMatrix.Multiply(s.projectionMatrix).Multiply(s.viewMatrix)
-	s.cullingMatrix.Scale(engo.GetGlobalScale().X, engo.GetGlobalScale().Y)
+	s.cullingMatrix.Scale(tango.GetGlobalScale().X, tango.GetGlobalScale().Y)
 }
 
 func (s *basicShader) ShouldDraw(rc *RenderComponent, sc *SpaceComponent) bool {
@@ -243,7 +243,7 @@ func (s *basicShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 	// If our texture (or any of its properties) has changed or we've reached the end of our buffer, flush before moving on.
 	if s.lastTexture != ren.Drawable.Texture() {
 		s.flush()
-		engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, ren.Drawable.Texture())
+		tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, ren.Drawable.Texture())
 		s.setTexture(ren.Drawable.Texture())
 	} else if s.idx == len(s.vertices) {
 		s.flush()
@@ -254,18 +254,18 @@ func (s *basicShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		var val int
 		switch ren.Repeat {
 		case NoRepeat:
-			val = engo.Gl.CLAMP_TO_EDGE
+			val = tango.Gl.CLAMP_TO_EDGE
 		case ClampToEdge:
-			val = engo.Gl.CLAMP_TO_EDGE
+			val = tango.Gl.CLAMP_TO_EDGE
 		case ClampToBorder:
-			val = engo.Gl.CLAMP_TO_EDGE
+			val = tango.Gl.CLAMP_TO_EDGE
 		case Repeat:
-			val = engo.Gl.REPEAT
+			val = tango.Gl.REPEAT
 		case MirroredRepeat:
-			val = engo.Gl.MIRRORED_REPEAT
+			val = tango.Gl.MIRRORED_REPEAT
 		}
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_S, val)
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_T, val)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, val)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, val)
 
 		s.lastRepeating = ren.Repeat
 	}
@@ -275,11 +275,11 @@ func (s *basicShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		var val int
 		switch ren.magFilter {
 		case FilterNearest:
-			val = engo.Gl.NEAREST
+			val = tango.Gl.NEAREST
 		case FilterLinear:
-			val = engo.Gl.LINEAR
+			val = tango.Gl.LINEAR
 		}
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_MAG_FILTER, val)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MAG_FILTER, val)
 
 		s.lastMagFilter = ren.magFilter
 	}
@@ -289,11 +289,11 @@ func (s *basicShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		var val int
 		switch ren.minFilter {
 		case FilterNearest:
-			val = engo.Gl.NEAREST
+			val = tango.Gl.NEAREST
 		case FilterLinear:
-			val = engo.Gl.LINEAR
+			val = tango.Gl.LINEAR
 		}
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_MIN_FILTER, val)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MIN_FILTER, val)
 
 		s.lastMinFilter = ren.minFilter
 	}
@@ -308,15 +308,15 @@ func (s *basicShader) Post() {
 	s.setTexture(nil)
 
 	// Cleanup
-	engo.Gl.DisableVertexAttribArray(s.inPosition)
-	engo.Gl.DisableVertexAttribArray(s.inTexCoords)
-	engo.Gl.DisableVertexAttribArray(s.inColor)
+	tango.Gl.DisableVertexAttribArray(s.inPosition)
+	tango.Gl.DisableVertexAttribArray(s.inTexCoords)
+	tango.Gl.DisableVertexAttribArray(s.inColor)
 
-	engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, nil)
-	engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, nil)
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, nil)
+	tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, nil)
+	tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, nil)
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, nil)
 
-	engo.Gl.Disable(engo.Gl.BLEND)
+	tango.Gl.Disable(tango.Gl.BLEND)
 }
 
 // setTexture resets all last* values from basicShader to a new default value (255)
@@ -332,10 +332,10 @@ func (s *basicShader) flush() {
 	if s.idx == 0 {
 		return
 	}
-	engo.Gl.BufferData(engo.Gl.ARRAY_BUFFER, s.vertices, engo.Gl.STATIC_DRAW)
+	tango.Gl.BufferData(tango.Gl.ARRAY_BUFFER, s.vertices, tango.Gl.STATIC_DRAW)
 	// We only want to draw the indicies up to the number of sprites in the current batch.
 	count := s.idx / 20 * 6
-	engo.Gl.DrawElements(engo.Gl.TRIANGLES, count, engo.Gl.UNSIGNED_SHORT, 0)
+	tango.Gl.DrawElements(tango.Gl.TRIANGLES, count, tango.Gl.UNSIGNED_SHORT, 0)
 	s.idx = 0
 	// We need to reset the vertex buffer so that when we start drawing again, we don't accidentally use junk data.
 	// The "simpler" way to do this would be to just create a new slice with make(), however that would cause the
@@ -354,11 +354,11 @@ func (s *basicShader) updateBuffer(ren *RenderComponent, space *SpaceComponent) 
 	s.generateBufferContent(ren, space, ren.BufferContent)
 }
 
-func (s *basicShader) makeModelMatrix(ren *RenderComponent, space *SpaceComponent) *engo.Matrix {
+func (s *basicShader) makeModelMatrix(ren *RenderComponent, space *SpaceComponent) *tango.Matrix {
 	// Instead of creating a new model matrix every time, we instead store a global one as a struct member
 	// and just reset it for every sprite. This prevents us from allocating a bunch of new Matrix instances in memory
 	// ultimately saving on GC activity.
-	s.modelMatrix.Identity().Scale(engo.GetGlobalScale().X, engo.GetGlobalScale().Y).Translate(space.Position.X, space.Position.Y)
+	s.modelMatrix.Identity().Scale(tango.GetGlobalScale().X, tango.GetGlobalScale().Y).Translate(space.Position.X, space.Position.Y)
 	if space.Rotation != 0 {
 		s.modelMatrix.Rotate(space.Rotation)
 	}
@@ -421,8 +421,8 @@ func (s *basicShader) generateBufferContent(ren *RenderComponent, space *SpaceCo
 	return changed
 }
 
-func (s *basicShader) multModel(m *engo.Matrix, v []float32) {
-	tmp := engo.MultiplyMatrixVector(m, v)
+func (s *basicShader) multModel(m *tango.Matrix, v []float32) {
+	tmp := tango.MultiplyMatrixVector(m, v)
 	v[0] = tmp[0]
 	v[1] = tmp[1]
 }
@@ -506,18 +506,18 @@ void main (void) {
 
 	// Create and populate indices buffer
 	l.indicesRectangles = []uint16{0, 1, 2, 0, 2, 3}
-	l.indicesRectanglesVBO = engo.Gl.CreateBuffer()
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectanglesVBO)
-	engo.Gl.BufferData(engo.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectangles, engo.Gl.STATIC_DRAW)
+	l.indicesRectanglesVBO = tango.Gl.CreateBuffer()
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectanglesVBO)
+	tango.Gl.BufferData(tango.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectangles, tango.Gl.STATIC_DRAW)
 
 	// Define things that should be read from the texture buffer
-	l.inPosition = engo.Gl.GetAttribLocation(l.program, "in_Position")
-	l.inColor = engo.Gl.GetAttribLocation(l.program, "in_Color")
+	l.inPosition = tango.Gl.GetAttribLocation(l.program, "in_Position")
+	l.inColor = tango.Gl.GetAttribLocation(l.program, "in_Color")
 
 	// Define things that should be set per draw
-	l.matrixProjection = engo.Gl.GetUniformLocation(l.program, "matrixProjection")
-	l.matrixView = engo.Gl.GetUniformLocation(l.program, "matrixView")
-	l.matrixModel = engo.Gl.GetUniformLocation(l.program, "matrixModel")
+	l.matrixProjection = tango.Gl.GetUniformLocation(l.program, "matrixProjection")
+	l.matrixView = tango.Gl.GetUniformLocation(l.program, "matrixView")
+	l.matrixModel = tango.Gl.GetUniformLocation(l.program, "matrixModel")
 
 	l.projectionMatrix = make([]float32, 9)
 	l.projectionMatrix[8] = 1
@@ -536,24 +536,24 @@ void main (void) {
 }
 
 func (l *legacyShader) Pre() {
-	engo.Gl.Enable(engo.Gl.BLEND)
-	engo.Gl.BlendFunc(engo.Gl.SRC_ALPHA, engo.Gl.ONE_MINUS_SRC_ALPHA)
+	tango.Gl.Enable(tango.Gl.BLEND)
+	tango.Gl.BlendFunc(tango.Gl.SRC_ALPHA, tango.Gl.ONE_MINUS_SRC_ALPHA)
 
 	// Bind shader and buffer, enable attributes
-	engo.Gl.UseProgram(l.program)
-	engo.Gl.EnableVertexAttribArray(l.inPosition)
-	engo.Gl.EnableVertexAttribArray(l.inColor)
+	tango.Gl.UseProgram(l.program)
+	tango.Gl.EnableVertexAttribArray(l.inPosition)
+	tango.Gl.EnableVertexAttribArray(l.inColor)
 
-	if engo.ScaleOnResize() {
-		l.projectionMatrix[0] = 1 / (engo.GameWidth() / 2)
-		l.projectionMatrix[4] = 1 / (-engo.GameHeight() / 2)
+	if tango.ScaleOnResize() {
+		l.projectionMatrix[0] = 1 / (tango.GameWidth() / 2)
+		l.projectionMatrix[4] = 1 / (-tango.GameHeight() / 2)
 	} else {
-		l.projectionMatrix[0] = 1 / (engo.CanvasWidth() / (2 * engo.CanvasScale()))
-		l.projectionMatrix[4] = 1 / (-engo.CanvasHeight() / (2 * engo.CanvasScale()))
+		l.projectionMatrix[0] = 1 / (tango.CanvasWidth() / (2 * tango.CanvasScale()))
+		l.projectionMatrix[4] = 1 / (-tango.CanvasHeight() / (2 * tango.CanvasScale()))
 	}
 
 	if l.cameraEnabled {
-		l.viewMatrix[1], l.viewMatrix[0] = math.Sincos(l.camera.angle * math.Pi / 180)
+		l.viewMatrix[1], l.viewMatrix[0] = math32.Sincos(l.camera.angle * math32.Pi / 180)
 		l.viewMatrix[3] = -l.viewMatrix[1]
 		l.viewMatrix[4] = l.viewMatrix[0]
 		l.viewMatrix[6] = -l.camera.x
@@ -564,8 +564,8 @@ func (l *legacyShader) Pre() {
 		l.viewMatrix[7] = 1 / l.projectionMatrix[4]
 	}
 
-	engo.Gl.UniformMatrix3fv(l.matrixProjection, false, l.projectionMatrix)
-	engo.Gl.UniformMatrix3fv(l.matrixView, false, l.viewMatrix)
+	tango.Gl.UniformMatrix3fv(l.matrixProjection, false, l.projectionMatrix)
+	tango.Gl.UniformMatrix3fv(l.matrixView, false, l.viewMatrix)
 }
 
 func (l *legacyShader) updateBuffer(ren *RenderComponent, space *SpaceComponent) {
@@ -577,10 +577,10 @@ func (l *legacyShader) updateBuffer(ren *RenderComponent, space *SpaceComponent)
 	}
 
 	if ren.Buffer == nil {
-		ren.Buffer = engo.Gl.CreateBuffer()
+		ren.Buffer = tango.Gl.CreateBuffer()
 	}
-	engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, ren.Buffer)
-	engo.Gl.BufferData(engo.Gl.ARRAY_BUFFER, ren.BufferContent, engo.Gl.STATIC_DRAW)
+	tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, ren.Buffer)
+	tango.Gl.BufferData(tango.Gl.ARRAY_BUFFER, ren.BufferContent, tango.Gl.STATIC_DRAW)
 }
 
 func (l *legacyShader) computeBufferSize(draw Drawable) int {
@@ -625,7 +625,7 @@ func (l *legacyShader) generateBufferContent(ren *RenderComponent, space *SpaceC
 			if shape.BorderWidth > 0 {
 				borderTint := colorToFloat32(shape.BorderColor)
 				b := shape.BorderWidth
-				s, c := math.Sincos(math.Atan(2 * h / w))
+				s, c := math32.Sincos(math32.Atan(2 * h / w))
 
 				pts := [][]float32{
 					//Left
@@ -707,8 +707,8 @@ func (l *legacyShader) generateBufferContent(ren *RenderComponent, space *SpaceC
 		}
 
 	case Circle:
-		theta := float32(2.0 * math.Pi / 300.0)
-		s, c := math.Sincos(theta)
+		theta := float32(2.0 * math32.Pi / 300.0)
+		s, c := math32.Sincos(theta)
 		x := w / 2
 		cx := w / 2
 		bx := shape.BorderWidth
@@ -833,31 +833,31 @@ func (l *legacyShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 	if l.lastBuffer != ren.Buffer || ren.Buffer == nil {
 		l.updateBuffer(ren, space)
 
-		engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, ren.Buffer)
-		engo.Gl.VertexAttribPointer(l.inPosition, 2, engo.Gl.FLOAT, false, 12, 0)
-		engo.Gl.VertexAttribPointer(l.inColor, 4, engo.Gl.UNSIGNED_BYTE, true, 12, 8)
+		tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, ren.Buffer)
+		tango.Gl.VertexAttribPointer(l.inPosition, 2, tango.Gl.FLOAT, false, 12, 0)
+		tango.Gl.VertexAttribPointer(l.inColor, 4, tango.Gl.UNSIGNED_BYTE, true, 12, 8)
 
 		l.lastBuffer = ren.Buffer
 	}
 
 	if space.Rotation != 0 {
-		sin, cos := math.Sincos(space.Rotation * math.Pi / 180)
+		sin, cos := math32.Sincos(space.Rotation * math32.Pi / 180)
 
-		l.modelMatrix[0] = ren.Scale.X * engo.GetGlobalScale().X * cos
-		l.modelMatrix[1] = ren.Scale.X * engo.GetGlobalScale().X * sin
-		l.modelMatrix[3] = ren.Scale.Y * engo.GetGlobalScale().Y * -sin
-		l.modelMatrix[4] = ren.Scale.Y * engo.GetGlobalScale().Y * cos
+		l.modelMatrix[0] = ren.Scale.X * tango.GetGlobalScale().X * cos
+		l.modelMatrix[1] = ren.Scale.X * tango.GetGlobalScale().X * sin
+		l.modelMatrix[3] = ren.Scale.Y * tango.GetGlobalScale().Y * -sin
+		l.modelMatrix[4] = ren.Scale.Y * tango.GetGlobalScale().Y * cos
 	} else {
-		l.modelMatrix[0] = ren.Scale.X * engo.GetGlobalScale().X
+		l.modelMatrix[0] = ren.Scale.X * tango.GetGlobalScale().X
 		l.modelMatrix[1] = 0
 		l.modelMatrix[3] = 0
-		l.modelMatrix[4] = ren.Scale.Y * engo.GetGlobalScale().Y
+		l.modelMatrix[4] = ren.Scale.Y * tango.GetGlobalScale().Y
 	}
 
-	l.modelMatrix[6] = space.Position.X * engo.GetGlobalScale().X
-	l.modelMatrix[7] = space.Position.Y * engo.GetGlobalScale().Y
+	l.modelMatrix[6] = space.Position.X * tango.GetGlobalScale().X
+	l.modelMatrix[7] = space.Position.Y * tango.GetGlobalScale().Y
 
-	engo.Gl.UniformMatrix3fv(l.matrixModel, false, l.modelMatrix)
+	tango.Gl.UniformMatrix3fv(l.matrixModel, false, l.modelMatrix)
 
 	switch shape := ren.Drawable.(type) {
 	case Triangle:
@@ -865,29 +865,29 @@ func (l *legacyShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		if shape.BorderWidth > 0 {
 			num = 21
 		}
-		engo.Gl.DrawArrays(engo.Gl.TRIANGLES, 0, num)
+		tango.Gl.DrawArrays(tango.Gl.TRIANGLES, 0, num)
 	case Rectangle:
 		num := 6
 		if shape.BorderWidth > 0 {
 			num = 30
 		}
-		engo.Gl.DrawArrays(engo.Gl.TRIANGLES, 0, num)
+		tango.Gl.DrawArrays(tango.Gl.TRIANGLES, 0, num)
 	case Circle:
 		// Circle stuff!
 		if shape.BorderWidth > 0 {
-			engo.Gl.DrawArrays(engo.Gl.TRIANGLE_FAN, 300, 300)
+			tango.Gl.DrawArrays(tango.Gl.TRIANGLE_FAN, 300, 300)
 		}
-		engo.Gl.DrawArrays(engo.Gl.TRIANGLE_FAN, 0, 300)
+		tango.Gl.DrawArrays(tango.Gl.TRIANGLE_FAN, 0, 300)
 	case ComplexTriangles:
-		engo.Gl.DrawArrays(engo.Gl.TRIANGLES, 0, len(shape.Points))
+		tango.Gl.DrawArrays(tango.Gl.TRIANGLES, 0, len(shape.Points))
 
 		if shape.BorderWidth > 0 {
 			borderWidth := shape.BorderWidth
 			if l.cameraEnabled {
 				borderWidth /= l.camera.z
 			}
-			engo.Gl.LineWidth(borderWidth)
-			engo.Gl.DrawArrays(engo.Gl.LINE_LOOP, len(shape.Points), len(shape.Points))
+			tango.Gl.LineWidth(borderWidth)
+			tango.Gl.DrawArrays(tango.Gl.LINE_LOOP, len(shape.Points), len(shape.Points))
 		}
 	default:
 		unsupportedType(ren.Drawable)
@@ -898,13 +898,13 @@ func (l *legacyShader) Post() {
 	l.lastBuffer = nil
 
 	// Cleanup
-	engo.Gl.DisableVertexAttribArray(l.inPosition)
-	engo.Gl.DisableVertexAttribArray(l.inColor)
+	tango.Gl.DisableVertexAttribArray(l.inPosition)
+	tango.Gl.DisableVertexAttribArray(l.inColor)
 
-	engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, nil)
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, nil)
+	tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, nil)
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, nil)
 
-	engo.Gl.Disable(engo.Gl.BLEND)
+	tango.Gl.Disable(tango.Gl.BLEND)
 }
 
 func (l *legacyShader) SetCamera(c *CameraSystem) {
@@ -990,19 +990,19 @@ void main (void) {
 		l.indicesRectangles[i+4] = uint16(j + 2)
 		l.indicesRectangles[i+5] = uint16(j + 3)
 	}
-	l.indicesRectanglesVBO = engo.Gl.CreateBuffer()
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectanglesVBO)
-	engo.Gl.BufferData(engo.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectangles, engo.Gl.STATIC_DRAW)
+	l.indicesRectanglesVBO = tango.Gl.CreateBuffer()
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectanglesVBO)
+	tango.Gl.BufferData(tango.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectangles, tango.Gl.STATIC_DRAW)
 
 	// Define things that should be read from the texture buffer
-	l.inPosition = engo.Gl.GetAttribLocation(l.program, "in_Position")
-	l.inTexCoords = engo.Gl.GetAttribLocation(l.program, "in_TexCoords")
-	l.inColor = engo.Gl.GetAttribLocation(l.program, "in_Color")
+	l.inPosition = tango.Gl.GetAttribLocation(l.program, "in_Position")
+	l.inTexCoords = tango.Gl.GetAttribLocation(l.program, "in_TexCoords")
+	l.inColor = tango.Gl.GetAttribLocation(l.program, "in_Color")
 
 	// Define things that should be set per draw
-	l.matrixProjection = engo.Gl.GetUniformLocation(l.program, "matrixProjection")
-	l.matrixView = engo.Gl.GetUniformLocation(l.program, "matrixView")
-	l.matrixModel = engo.Gl.GetUniformLocation(l.program, "matrixModel")
+	l.matrixProjection = tango.Gl.GetUniformLocation(l.program, "matrixProjection")
+	l.matrixView = tango.Gl.GetUniformLocation(l.program, "matrixView")
+	l.matrixModel = tango.Gl.GetUniformLocation(l.program, "matrixModel")
 
 	l.projectionMatrix = make([]float32, 9)
 	l.projectionMatrix[8] = 1
@@ -1021,26 +1021,26 @@ void main (void) {
 }
 
 func (l *textShader) Pre() {
-	engo.Gl.Enable(engo.Gl.BLEND)
-	engo.Gl.BlendFunc(engo.Gl.SRC_ALPHA, engo.Gl.ONE_MINUS_SRC_ALPHA)
+	tango.Gl.Enable(tango.Gl.BLEND)
+	tango.Gl.BlendFunc(tango.Gl.SRC_ALPHA, tango.Gl.ONE_MINUS_SRC_ALPHA)
 
 	// Bind shader and buffer, enable attributes
-	engo.Gl.UseProgram(l.program)
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectanglesVBO)
-	engo.Gl.EnableVertexAttribArray(l.inPosition)
-	engo.Gl.EnableVertexAttribArray(l.inTexCoords)
-	engo.Gl.EnableVertexAttribArray(l.inColor)
+	tango.Gl.UseProgram(l.program)
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, l.indicesRectanglesVBO)
+	tango.Gl.EnableVertexAttribArray(l.inPosition)
+	tango.Gl.EnableVertexAttribArray(l.inTexCoords)
+	tango.Gl.EnableVertexAttribArray(l.inColor)
 
-	if engo.ScaleOnResize() {
-		l.projectionMatrix[0] = 1 / (engo.GameWidth() / 2)
-		l.projectionMatrix[4] = 1 / (-engo.GameHeight() / 2)
+	if tango.ScaleOnResize() {
+		l.projectionMatrix[0] = 1 / (tango.GameWidth() / 2)
+		l.projectionMatrix[4] = 1 / (-tango.GameHeight() / 2)
 	} else {
-		l.projectionMatrix[0] = 1 / (engo.CanvasWidth() / (2 * engo.CanvasScale()))
-		l.projectionMatrix[4] = 1 / (-engo.CanvasHeight() / (2 * engo.CanvasScale()))
+		l.projectionMatrix[0] = 1 / (tango.CanvasWidth() / (2 * tango.CanvasScale()))
+		l.projectionMatrix[4] = 1 / (-tango.CanvasHeight() / (2 * tango.CanvasScale()))
 	}
 
 	if l.cameraEnabled {
-		l.viewMatrix[1], l.viewMatrix[0] = math.Sincos(l.camera.angle * math.Pi / 180)
+		l.viewMatrix[1], l.viewMatrix[0] = math32.Sincos(l.camera.angle * math32.Pi / 180)
 		l.viewMatrix[3] = -l.viewMatrix[1]
 		l.viewMatrix[4] = l.viewMatrix[0]
 		l.viewMatrix[6] = -l.camera.x
@@ -1051,8 +1051,8 @@ func (l *textShader) Pre() {
 		l.viewMatrix[7] = 1 / l.projectionMatrix[4]
 	}
 
-	engo.Gl.UniformMatrix3fv(l.matrixProjection, false, l.projectionMatrix)
-	engo.Gl.UniformMatrix3fv(l.matrixView, false, l.viewMatrix)
+	tango.Gl.UniformMatrix3fv(l.matrixProjection, false, l.projectionMatrix)
+	tango.Gl.UniformMatrix3fv(l.matrixView, false, l.viewMatrix)
 }
 
 func (l *textShader) updateBuffer(ren *RenderComponent, space *SpaceComponent) {
@@ -1070,10 +1070,10 @@ func (l *textShader) updateBuffer(ren *RenderComponent, space *SpaceComponent) {
 	}
 
 	if ren.Buffer == nil {
-		ren.Buffer = engo.Gl.CreateBuffer()
+		ren.Buffer = tango.Gl.CreateBuffer()
 	}
-	engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, ren.Buffer)
-	engo.Gl.BufferData(engo.Gl.ARRAY_BUFFER, ren.BufferContent, engo.Gl.STATIC_DRAW)
+	tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, ren.Buffer)
+	tango.Gl.BufferData(tango.Gl.ARRAY_BUFFER, ren.BufferContent, tango.Gl.STATIC_DRAW)
 }
 
 func (l *textShader) generateBufferContent(ren *RenderComponent, space *SpaceComponent, buffer []float32) bool {
@@ -1155,10 +1155,10 @@ func (l *textShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 	if l.lastBuffer != ren.Buffer || ren.Buffer == nil {
 		l.updateBuffer(ren, space)
 
-		engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, ren.Buffer)
-		engo.Gl.VertexAttribPointer(l.inPosition, 2, engo.Gl.FLOAT, false, 20, 0)
-		engo.Gl.VertexAttribPointer(l.inTexCoords, 2, engo.Gl.FLOAT, false, 20, 8)
-		engo.Gl.VertexAttribPointer(l.inColor, 4, engo.Gl.UNSIGNED_BYTE, true, 20, 16)
+		tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, ren.Buffer)
+		tango.Gl.VertexAttribPointer(l.inPosition, 2, tango.Gl.FLOAT, false, 20, 0)
+		tango.Gl.VertexAttribPointer(l.inTexCoords, 2, tango.Gl.FLOAT, false, 20, 8)
+		tango.Gl.VertexAttribPointer(l.inColor, 4, tango.Gl.UNSIGNED_BYTE, true, 20, 16)
 
 		l.lastBuffer = ren.Buffer
 	}
@@ -1176,33 +1176,33 @@ func (l *textShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 	}
 
 	if atlas.Texture != l.lastTexture {
-		engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, atlas.Texture)
+		tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, atlas.Texture)
 		l.lastTexture = atlas.Texture
 	}
 
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_S, engo.Gl.CLAMP_TO_EDGE)
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_T, engo.Gl.CLAMP_TO_EDGE)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, tango.Gl.CLAMP_TO_EDGE)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, tango.Gl.CLAMP_TO_EDGE)
 
 	if space.Rotation != 0 {
-		sin, cos := math.Sincos(space.Rotation * math.Pi / 180)
+		sin, cos := math32.Sincos(space.Rotation * math32.Pi / 180)
 
-		l.modelMatrix[0] = ren.Scale.X * engo.GetGlobalScale().X * cos
-		l.modelMatrix[1] = ren.Scale.X * engo.GetGlobalScale().X * sin
-		l.modelMatrix[3] = ren.Scale.Y * engo.GetGlobalScale().Y * -sin
-		l.modelMatrix[4] = ren.Scale.Y * engo.GetGlobalScale().Y * cos
+		l.modelMatrix[0] = ren.Scale.X * tango.GetGlobalScale().X * cos
+		l.modelMatrix[1] = ren.Scale.X * tango.GetGlobalScale().X * sin
+		l.modelMatrix[3] = ren.Scale.Y * tango.GetGlobalScale().Y * -sin
+		l.modelMatrix[4] = ren.Scale.Y * tango.GetGlobalScale().Y * cos
 	} else {
-		l.modelMatrix[0] = ren.Scale.X * engo.GetGlobalScale().X
+		l.modelMatrix[0] = ren.Scale.X * tango.GetGlobalScale().X
 		l.modelMatrix[1] = 0
 		l.modelMatrix[3] = 0
-		l.modelMatrix[4] = ren.Scale.Y * engo.GetGlobalScale().Y
+		l.modelMatrix[4] = ren.Scale.Y * tango.GetGlobalScale().Y
 	}
 
-	l.modelMatrix[6] = space.Position.X * engo.GetGlobalScale().X
-	l.modelMatrix[7] = space.Position.Y * engo.GetGlobalScale().Y
+	l.modelMatrix[6] = space.Position.X * tango.GetGlobalScale().X
+	l.modelMatrix[7] = space.Position.Y * tango.GetGlobalScale().Y
 
-	engo.Gl.UniformMatrix3fv(l.matrixModel, false, l.modelMatrix)
+	tango.Gl.UniformMatrix3fv(l.matrixModel, false, l.modelMatrix)
 
-	engo.Gl.DrawElements(engo.Gl.TRIANGLES, 6*len(txt.Text), engo.Gl.UNSIGNED_SHORT, 0)
+	tango.Gl.DrawElements(tango.Gl.TRIANGLES, 6*len(txt.Text), tango.Gl.UNSIGNED_SHORT, 0)
 }
 
 func (l *textShader) Post() {
@@ -1210,15 +1210,15 @@ func (l *textShader) Post() {
 	l.lastTexture = nil
 
 	// Cleanup
-	engo.Gl.DisableVertexAttribArray(l.inPosition)
-	engo.Gl.DisableVertexAttribArray(l.inTexCoords)
-	engo.Gl.DisableVertexAttribArray(l.inColor)
+	tango.Gl.DisableVertexAttribArray(l.inPosition)
+	tango.Gl.DisableVertexAttribArray(l.inTexCoords)
+	tango.Gl.DisableVertexAttribArray(l.inColor)
 
-	engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, nil)
-	engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, nil)
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, nil)
+	tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, nil)
+	tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, nil)
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, nil)
 
-	engo.Gl.Disable(engo.Gl.BLEND)
+	tango.Gl.Disable(tango.Gl.BLEND)
 }
 
 func (l *textShader) SetCamera(c *CameraSystem) {
@@ -1240,7 +1240,7 @@ func colorToFloat32(c color.Color) float32 {
 	blue := colorB << 16
 	alpha := colorA << 24
 
-	return math.Float32frombits((alpha | blue | green | red) & 0xfeffffff)
+	return math32.Float32frombits((alpha | blue | green | red) & 0xfeffffff)
 }
 
 var (
@@ -1301,28 +1301,28 @@ func initShaders(w *ecs.World) error {
 // LoadShader takes a Vertex-shader and Fragment-shader, compiles them and attaches them to a newly created glProgram.
 // It will log possible compilation errors
 func LoadShader(vertSrc, fragSrc string) (*gl.Program, error) {
-	vertShader := engo.Gl.CreateShader(engo.Gl.VERTEX_SHADER)
-	engo.Gl.ShaderSource(vertShader, vertSrc)
-	engo.Gl.CompileShader(vertShader)
-	if !engo.Gl.GetShaderiv(vertShader, engo.Gl.COMPILE_STATUS) {
-		errorLog := engo.Gl.GetShaderInfoLog(vertShader)
+	vertShader := tango.Gl.CreateShader(tango.Gl.VERTEX_SHADER)
+	tango.Gl.ShaderSource(vertShader, vertSrc)
+	tango.Gl.CompileShader(vertShader)
+	if !tango.Gl.GetShaderiv(vertShader, tango.Gl.COMPILE_STATUS) {
+		errorLog := tango.Gl.GetShaderInfoLog(vertShader)
 		return nil, VertexShaderCompilationError{errorLog}
 	}
-	defer engo.Gl.DeleteShader(vertShader)
+	defer tango.Gl.DeleteShader(vertShader)
 
-	fragShader := engo.Gl.CreateShader(engo.Gl.FRAGMENT_SHADER)
-	engo.Gl.ShaderSource(fragShader, fragSrc)
-	engo.Gl.CompileShader(fragShader)
-	if !engo.Gl.GetShaderiv(fragShader, engo.Gl.COMPILE_STATUS) {
-		errorLog := engo.Gl.GetShaderInfoLog(fragShader)
+	fragShader := tango.Gl.CreateShader(tango.Gl.FRAGMENT_SHADER)
+	tango.Gl.ShaderSource(fragShader, fragSrc)
+	tango.Gl.CompileShader(fragShader)
+	if !tango.Gl.GetShaderiv(fragShader, tango.Gl.COMPILE_STATUS) {
+		errorLog := tango.Gl.GetShaderInfoLog(fragShader)
 		return nil, FragmentShaderCompilationError{errorLog}
 	}
-	defer engo.Gl.DeleteShader(fragShader)
+	defer tango.Gl.DeleteShader(fragShader)
 
-	program := engo.Gl.CreateProgram()
-	engo.Gl.AttachShader(program, vertShader)
-	engo.Gl.AttachShader(program, fragShader)
-	engo.Gl.LinkProgram(program)
+	program := tango.Gl.CreateProgram()
+	tango.Gl.AttachShader(program, vertShader)
+	tango.Gl.AttachShader(program, fragShader)
+	tango.Gl.LinkProgram(program)
 
 	return program, nil
 }

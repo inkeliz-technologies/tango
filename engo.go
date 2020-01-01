@@ -1,11 +1,11 @@
-package engo
+package tango
 
 import (
 	"fmt"
 	"log"
 	"sync"
 
-	"github.com/EngoEngine/ecs"
+	"github.com/inkeliz-technologies/ecs"
 )
 
 // BackEnd represents the back end used for the window management / GL Surface
@@ -60,11 +60,11 @@ var (
 )
 
 const (
-	// DefaultVerticalAxis is the name of the default vertical axis, as used internally in `engo` when `StandardInputs`
+	// DefaultVerticalAxis is the name of the default vertical axis, as used internally in `tango` when `StandardInputs`
 	// is defined.
 	DefaultVerticalAxis = "vertical"
 
-	// DefaultHorizontalAxis is the name of the default horizontal axis, as used internally in `engo` when `StandardInputs`
+	// DefaultHorizontalAxis is the name of the default horizontal axis, as used internally in `tango` when `StandardInputs`
 	// is defined.
 	DefaultHorizontalAxis = "horizontal"
 	// DefaultMouseXAxis is the name of the default horizontal mouse axis
@@ -73,7 +73,7 @@ const (
 	DefaultMouseYAxis = "mouse y"
 )
 
-// RunOptions are the options used to Run engo
+// RunOptions are the options used to Run tango
 type RunOptions struct {
 	// NoRun indicates the Open function should return immediately, without looping
 	NoRun bool
@@ -91,7 +91,7 @@ type RunOptions struct {
 
 	// GlobalScale scales all size/render components by the scale factor
 	// Any point passed less than or equal to zero will result in the scale being set to
-	// engo.Point{1, 1}.
+	// tango.Point{1, 1}.
 	// All the systems in common should scale themselves accordingly (collision, camera, render, etc)
 	// However, custom systems should be aware of this if this is set.
 	GlobalScale Point
@@ -102,13 +102,13 @@ type RunOptions struct {
 	// Resizable indicates whether or not the Window should be resizable.  Defaults to `true`.
 	NotResizable bool
 
-	// ScaleOnResize indicates whether or not engo should make things larger/smaller whenever the screen resizes
+	// ScaleOnResize indicates whether or not tango should make things larger/smaller whenever the screen resizes
 	ScaleOnResize bool
 
 	// FPSLimit indicates the maximum number of frames per second
 	FPSLimit int
 
-	// OverrideCloseAction indicates that (when true) engo will never close whenever the gamer wants to close the
+	// OverrideCloseAction indicates that (when true) tango will never close whenever the gamer wants to close the
 	// game - that will be your responsibility
 	OverrideCloseAction bool
 
@@ -144,7 +144,7 @@ type RunOptions struct {
 
 	// Update is the function called each frame during the runLoop to update all of the
 	// systems. If left blank, it defaults to &ecs.World{}. Use this if you plan on utilizing
-	// engo's window / GL management but don't want to use the ECS paradigm.
+	// tango's window / GL management but don't want to use the ECS paradigm.
 	Update Updater
 
 	// ApplicationXXXVersion is the major, minor, and revision versions of the game.
@@ -231,17 +231,17 @@ func Run(o RunOptions, defaultScene Scene) {
 	}
 }
 
-// SetScaleOnResize can be used to change the value in the given `RunOpts` after already having called `engo.Run`.
+// SetScaleOnResize can be used to change the value in the given `RunOpts` after already having called `tango.Run`.
 func SetScaleOnResize(b bool) {
 	opts.ScaleOnResize = b
 }
 
-// SetOverrideCloseAction can be used to change the value in the given `RunOpts` after already having called `engo.Run`.
+// SetOverrideCloseAction can be used to change the value in the given `RunOpts` after already having called `tango.Run`.
 func SetOverrideCloseAction(value bool) {
 	opts.OverrideCloseAction = value
 }
 
-// SetFPSLimit can be used to change the value in the given `RunOpts` after already having called `engo.Run`.
+// SetFPSLimit can be used to change the value in the given `RunOpts` after already having called `tango.Run`.
 func SetFPSLimit(limit int) error {
 	if limit <= 0 {
 		return fmt.Errorf("FPS Limit out of bounds. Requires > 0")
@@ -263,7 +263,7 @@ func ScaleOnResize() bool {
 	return opts.ScaleOnResize
 }
 
-// Exit is the safest way to close your game, as `engo` will correctly attempt to close all windows, handlers and contexts
+// Exit is the safest way to close your game, as `tango` will correctly attempt to close all windows, handlers and contexts
 func Exit() {
 	closeGameOnce.Do(func() {
 		close(closeGame)

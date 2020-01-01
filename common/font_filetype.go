@@ -5,12 +5,12 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/tango"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 )
 
-// FontResource is a wrapper for `*truetype.Font` which is being passed by the the `engo.Files.Resource` method in the
+// FontResource is a wrapper for `*truetype.Font` which is being passed by the the `tango.Files.Resource` method in the
 // case of `.ttf` files.
 type FontResource struct {
 	Font *truetype.Font
@@ -22,7 +22,7 @@ func (f FontResource) URL() string {
 	return f.url
 }
 
-// fontLoader is responsible for managing `.ttf` files within `engo.Files`
+// fontLoader is responsible for managing `.ttf` files within `tango.Files`
 type fontLoader struct {
 	fonts map[string]FontResource
 }
@@ -50,7 +50,7 @@ func (i *fontLoader) Unload(url string) error {
 }
 
 // Resource retrieves the preloaded font, passed as a `FontResource`
-func (i *fontLoader) Resource(url string) (engo.Resource, error) {
+func (i *fontLoader) Resource(url string) (tango.Resource, error) {
 	texture, ok := i.fonts[url]
 	if !ok {
 		return nil, fmt.Errorf("resource not loaded by `FileLoader`: %q", url)
@@ -60,5 +60,5 @@ func (i *fontLoader) Resource(url string) (engo.Resource, error) {
 }
 
 func init() {
-	engo.Files.Register(".ttf", &fontLoader{fonts: make(map[string]FontResource)})
+	tango.Files.Register(".ttf", &fontLoader{fonts: make(map[string]FontResource)})
 }

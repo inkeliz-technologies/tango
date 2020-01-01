@@ -1,4 +1,4 @@
-package engo
+package tango
 
 import (
 	"fmt"
@@ -41,13 +41,13 @@ type Exiter interface {
 	// This should be used to cleanup or prompt user if they're sure they want to close
 	// To prevent the default action (close/exit) make sure to set OverrideCloseAction in
 	// your RunOpts to `true`. You should then handle the exiting of the program by calling
-	//    engo.Exit()
+	//    tango.Exit()
 	Exit()
 }
 
 // Updater is an interface for what handles your game's Update during each frame.
 // typically, this will be an *ecs.World, but you can implement your own Upodater
-// and use engo without using engo's ecs
+// and use tango without using tango's ecs
 type Updater interface {
 	Update(float32)
 }

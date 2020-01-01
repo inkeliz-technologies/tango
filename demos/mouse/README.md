@@ -1,7 +1,7 @@
 # Mouse Demo
 
 ## What does it do?
-It demonstrates how one can use mouse events in `engo`. 
+It demonstrates how one can use mouse events in `tango`. 
 
 ## What are important aspects of the code?
 These lines are key in this demo:

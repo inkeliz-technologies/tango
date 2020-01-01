@@ -3,9 +3,9 @@ package common
 import (
 	"fmt"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/gl"
 )
 
 type TexturePack struct {
@@ -121,10 +121,10 @@ type blendmapShader struct {
 	uf_scaleG  *gl.UniformLocation
 	uf_scaleB  *gl.UniformLocation
 
-	projectionMatrix *engo.Matrix
-	viewMatrix       *engo.Matrix
-	modelMatrix      *engo.Matrix
-	cullingMatrix    *engo.Matrix
+	projectionMatrix *tango.Matrix
+	viewMatrix       *tango.Matrix
+	modelMatrix      *tango.Matrix
+	cullingMatrix    *tango.Matrix
 
 	camera        *CameraSystem
 	cameraEnabled bool
@@ -141,7 +141,7 @@ func (s *blendmapShader) Setup(w *ecs.World) error {
 	}
 	// Create the vertex buffer for batching.
 	s.vertices = make([]float32, s.BatchSize*blendmapSpriteSize)
-	s.vertexBuffer = engo.Gl.CreateBuffer()
+	s.vertexBuffer = tango.Gl.CreateBuffer()
 	// Create and populate indices buffer. The size of the buffer depends on the batch size.
 	// These should never change, so we can just initialize them once here and be done with it.
 	numIndicies := s.BatchSize * 6
@@ -159,72 +159,72 @@ func (s *blendmapShader) Setup(w *ecs.World) error {
 	if err != nil {
 		return err
 	}
-	s.indexBuffer = engo.Gl.CreateBuffer()
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, s.indexBuffer)
-	engo.Gl.BufferData(engo.Gl.ELEMENT_ARRAY_BUFFER, s.indices, engo.Gl.STATIC_DRAW)
+	s.indexBuffer = tango.Gl.CreateBuffer()
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, s.indexBuffer)
+	tango.Gl.BufferData(tango.Gl.ELEMENT_ARRAY_BUFFER, s.indices, tango.Gl.STATIC_DRAW)
 
-	s.inPosition = engo.Gl.GetAttribLocation(s.program, "in_Position")
-	s.inTexCoords = engo.Gl.GetAttribLocation(s.program, "in_TexCoords")
-	s.inColor = engo.Gl.GetAttribLocation(s.program, "in_Color")
+	s.inPosition = tango.Gl.GetAttribLocation(s.program, "in_Position")
+	s.inTexCoords = tango.Gl.GetAttribLocation(s.program, "in_TexCoords")
+	s.inColor = tango.Gl.GetAttribLocation(s.program, "in_Color")
 
-	s.matrixProjView = engo.Gl.GetUniformLocation(s.program, "matrixProjView")
+	s.matrixProjView = tango.Gl.GetUniformLocation(s.program, "matrixProjView")
 
-	s.uf_BlendMap = engo.Gl.GetUniformLocation(s.program, "uf_BlendMap")
-	s.uf_Fallback = engo.Gl.GetUniformLocation(s.program, "uf_Fallback")
-	s.uf_RChannel = engo.Gl.GetUniformLocation(s.program, "uf_RChannel")
-	s.uf_GChannel = engo.Gl.GetUniformLocation(s.program, "uf_GChannel")
-	s.uf_BChannel = engo.Gl.GetUniformLocation(s.program, "uf_BChannel")
+	s.uf_BlendMap = tango.Gl.GetUniformLocation(s.program, "uf_BlendMap")
+	s.uf_Fallback = tango.Gl.GetUniformLocation(s.program, "uf_Fallback")
+	s.uf_RChannel = tango.Gl.GetUniformLocation(s.program, "uf_RChannel")
+	s.uf_GChannel = tango.Gl.GetUniformLocation(s.program, "uf_GChannel")
+	s.uf_BChannel = tango.Gl.GetUniformLocation(s.program, "uf_BChannel")
 
-	s.uf_scaleFB = engo.Gl.GetUniformLocation(s.program, "uf_scaleFB")
-	s.uf_scaleR = engo.Gl.GetUniformLocation(s.program, "uf_scaleR")
-	s.uf_scaleG = engo.Gl.GetUniformLocation(s.program, "uf_scaleG")
-	s.uf_scaleB = engo.Gl.GetUniformLocation(s.program, "uf_scaleB")
+	s.uf_scaleFB = tango.Gl.GetUniformLocation(s.program, "uf_scaleFB")
+	s.uf_scaleR = tango.Gl.GetUniformLocation(s.program, "uf_scaleR")
+	s.uf_scaleG = tango.Gl.GetUniformLocation(s.program, "uf_scaleG")
+	s.uf_scaleB = tango.Gl.GetUniformLocation(s.program, "uf_scaleB")
 
-	s.projectionMatrix = engo.IdentityMatrix()
-	s.viewMatrix = engo.IdentityMatrix()
-	s.modelMatrix = engo.IdentityMatrix()
-	s.cullingMatrix = engo.IdentityMatrix()
+	s.projectionMatrix = tango.IdentityMatrix()
+	s.viewMatrix = tango.IdentityMatrix()
+	s.modelMatrix = tango.IdentityMatrix()
+	s.cullingMatrix = tango.IdentityMatrix()
 
 	return nil
 }
 
 func (s *blendmapShader) Pre() {
-	engo.Gl.Enable(engo.Gl.BLEND)
-	engo.Gl.BlendFunc(engo.Gl.SRC_ALPHA, engo.Gl.ONE_MINUS_SRC_ALPHA)
+	tango.Gl.Enable(tango.Gl.BLEND)
+	tango.Gl.BlendFunc(tango.Gl.SRC_ALPHA, tango.Gl.ONE_MINUS_SRC_ALPHA)
 	// Enable shader and buffer, enable attributes in shader
-	engo.Gl.UseProgram(s.program)
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, s.indexBuffer)
-	engo.Gl.EnableVertexAttribArray(s.inPosition)
-	engo.Gl.EnableVertexAttribArray(s.inTexCoords)
-	engo.Gl.EnableVertexAttribArray(s.inColor)
+	tango.Gl.UseProgram(s.program)
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, s.indexBuffer)
+	tango.Gl.EnableVertexAttribArray(s.inPosition)
+	tango.Gl.EnableVertexAttribArray(s.inTexCoords)
+	tango.Gl.EnableVertexAttribArray(s.inColor)
 
-	engo.Gl.Uniform1i(s.uf_BlendMap, 0)
-	engo.Gl.Uniform1i(s.uf_Fallback, 1)
-	engo.Gl.Uniform1i(s.uf_RChannel, 2)
-	engo.Gl.Uniform1i(s.uf_GChannel, 3)
-	engo.Gl.Uniform1i(s.uf_BChannel, 4)
+	tango.Gl.Uniform1i(s.uf_BlendMap, 0)
+	tango.Gl.Uniform1i(s.uf_Fallback, 1)
+	tango.Gl.Uniform1i(s.uf_RChannel, 2)
+	tango.Gl.Uniform1i(s.uf_GChannel, 3)
+	tango.Gl.Uniform1i(s.uf_BChannel, 4)
 
 	// The matrixProjView shader uniform is projection * view.
 	// We do the multiplication on the CPU instead of sending each matrix to the shader and letting the GPU do the multiplication,
 	// because it's likely faster to do the multiplication client side and send the result over the shader bus than to send two separate
 	// buffers over the bus and then do the multiplication on the GPU.
 	pv := s.projectionMatrix.Multiply(s.viewMatrix)
-	engo.Gl.UniformMatrix3fv(s.matrixProjView, false, pv.Val[:])
+	tango.Gl.UniformMatrix3fv(s.matrixProjView, false, pv.Val[:])
 
 	// Since we are batching client side, we only have one VBO, so we can just bind it now and use it for the entire frame.
-	engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, s.vertexBuffer)
-	engo.Gl.VertexAttribPointer(s.inPosition, 2, engo.Gl.FLOAT, false, 20, 0)
-	engo.Gl.VertexAttribPointer(s.inTexCoords, 2, engo.Gl.FLOAT, false, 20, 8)
-	engo.Gl.VertexAttribPointer(s.inColor, 4, engo.Gl.UNSIGNED_BYTE, true, 20, 16)
+	tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, s.vertexBuffer)
+	tango.Gl.VertexAttribPointer(s.inPosition, 2, tango.Gl.FLOAT, false, 20, 0)
+	tango.Gl.VertexAttribPointer(s.inTexCoords, 2, tango.Gl.FLOAT, false, 20, 8)
+	tango.Gl.VertexAttribPointer(s.inColor, 4, tango.Gl.UNSIGNED_BYTE, true, 20, 16)
 }
 
 func (s *blendmapShader) PrepareCulling() {
 	// (Re)initialize the projection matrix.
 	s.projectionMatrix.Identity()
-	if engo.ScaleOnResize() {
-		s.projectionMatrix.Scale(1/(engo.GameWidth()/2), 1/(-engo.GameHeight()/2))
+	if tango.ScaleOnResize() {
+		s.projectionMatrix.Scale(1/(tango.GameWidth()/2), 1/(-tango.GameHeight()/2))
 	} else {
-		s.projectionMatrix.Scale(1/(engo.CanvasWidth()/(2*engo.CanvasScale())), 1/(-engo.CanvasHeight()/(2*engo.CanvasScale())))
+		s.projectionMatrix.Scale(1/(tango.CanvasWidth()/(2*tango.CanvasScale())), 1/(-tango.CanvasHeight()/(2*tango.CanvasScale())))
 	}
 	// (Re)initialize the view matrix
 	s.viewMatrix.Identity()
@@ -237,7 +237,7 @@ func (s *blendmapShader) PrepareCulling() {
 	}
 	s.cullingMatrix.Identity()
 	s.cullingMatrix.Multiply(s.projectionMatrix).Multiply(s.viewMatrix)
-	s.cullingMatrix.Scale(engo.GetGlobalScale().X, engo.GetGlobalScale().Y)
+	s.cullingMatrix.Scale(tango.GetGlobalScale().X, tango.GetGlobalScale().Y)
 }
 
 func (s *blendmapShader) ShouldDraw(rc *RenderComponent, sc *SpaceComponent) bool {
@@ -261,35 +261,35 @@ func (s *blendmapShader) ShouldDraw(rc *RenderComponent, sc *SpaceComponent) boo
 }
 
 func (s *blendmapShader) bindTexturePack(tp *TexturePack) {
-	engo.Gl.ActiveTexture(engo.Gl.TEXTURE1)
-	engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, tp.Fallback.Texture())
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_S, engo.Gl.REPEAT)
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_T, engo.Gl.REPEAT)
+	tango.Gl.ActiveTexture(tango.Gl.TEXTURE1)
+	tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, tp.Fallback.Texture())
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, tango.Gl.REPEAT)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, tango.Gl.REPEAT)
 
-	engo.Gl.ActiveTexture(engo.Gl.TEXTURE2)
-	engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, tp.RChannel.Texture())
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_S, engo.Gl.REPEAT)
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_T, engo.Gl.REPEAT)
+	tango.Gl.ActiveTexture(tango.Gl.TEXTURE2)
+	tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, tp.RChannel.Texture())
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, tango.Gl.REPEAT)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, tango.Gl.REPEAT)
 
-	engo.Gl.ActiveTexture(engo.Gl.TEXTURE3)
-	engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, tp.GChannel.Texture())
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_S, engo.Gl.REPEAT)
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_T, engo.Gl.REPEAT)
+	tango.Gl.ActiveTexture(tango.Gl.TEXTURE3)
+	tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, tp.GChannel.Texture())
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, tango.Gl.REPEAT)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, tango.Gl.REPEAT)
 
-	engo.Gl.ActiveTexture(engo.Gl.TEXTURE4)
-	engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, tp.BChannel.Texture())
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_S, engo.Gl.REPEAT)
-	engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_T, engo.Gl.REPEAT)
+	tango.Gl.ActiveTexture(tango.Gl.TEXTURE4)
+	tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, tp.BChannel.Texture())
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, tango.Gl.REPEAT)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, tango.Gl.REPEAT)
 
 	// always go back to texture 0 since all other shaders might rely on it.
-	engo.Gl.ActiveTexture(engo.Gl.TEXTURE0)
+	tango.Gl.ActiveTexture(tango.Gl.TEXTURE0)
 }
 
 func (s *blendmapShader) updateScale(bm Blendmap) {
-	engo.Gl.Uniform2f(s.uf_scaleFB, bm.Width()/bm.Fallback.Width(), bm.Height()/bm.Fallback.Height())
-	engo.Gl.Uniform2f(s.uf_scaleR, bm.Width()/bm.RChannel.Width(), bm.Height()/bm.RChannel.Height())
-	engo.Gl.Uniform2f(s.uf_scaleG, bm.Width()/bm.GChannel.Width(), bm.Height()/bm.GChannel.Height())
-	engo.Gl.Uniform2f(s.uf_scaleB, bm.Width()/bm.BChannel.Width(), bm.Height()/bm.BChannel.Height())
+	tango.Gl.Uniform2f(s.uf_scaleFB, bm.Width()/bm.Fallback.Width(), bm.Height()/bm.Fallback.Height())
+	tango.Gl.Uniform2f(s.uf_scaleR, bm.Width()/bm.RChannel.Width(), bm.Height()/bm.RChannel.Height())
+	tango.Gl.Uniform2f(s.uf_scaleG, bm.Width()/bm.GChannel.Width(), bm.Height()/bm.GChannel.Height())
+	tango.Gl.Uniform2f(s.uf_scaleB, bm.Width()/bm.BChannel.Width(), bm.Height()/bm.BChannel.Height())
 }
 
 func (s *blendmapShader) Draw(ren *RenderComponent, space *SpaceComponent) {
@@ -314,7 +314,7 @@ func (s *blendmapShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 	if s.lastTexture != ren.Drawable.Texture() {
 		s.flush()
 
-		engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, ren.Drawable.Texture())
+		tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, ren.Drawable.Texture())
 		s.updateScale(bm)
 
 		s.lastTexture = ren.Drawable.Texture()
@@ -327,18 +327,18 @@ func (s *blendmapShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		var val int
 		switch ren.Repeat {
 		case NoRepeat:
-			val = engo.Gl.CLAMP_TO_EDGE
+			val = tango.Gl.CLAMP_TO_EDGE
 		case ClampToEdge:
-			val = engo.Gl.CLAMP_TO_EDGE
+			val = tango.Gl.CLAMP_TO_EDGE
 		case ClampToBorder:
-			val = engo.Gl.CLAMP_TO_EDGE
+			val = tango.Gl.CLAMP_TO_EDGE
 		case Repeat:
-			val = engo.Gl.REPEAT
+			val = tango.Gl.REPEAT
 		case MirroredRepeat:
-			val = engo.Gl.MIRRORED_REPEAT
+			val = tango.Gl.MIRRORED_REPEAT
 		}
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_S, val)
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_T, val)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, val)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, val)
 	}
 
 	if s.lastMagFilter != ren.magFilter {
@@ -346,11 +346,11 @@ func (s *blendmapShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		var val int
 		switch ren.magFilter {
 		case FilterNearest:
-			val = engo.Gl.NEAREST
+			val = tango.Gl.NEAREST
 		case FilterLinear:
-			val = engo.Gl.LINEAR
+			val = tango.Gl.LINEAR
 		}
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_MAG_FILTER, val)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MAG_FILTER, val)
 	}
 
 	if s.lastMinFilter != ren.minFilter {
@@ -358,11 +358,11 @@ func (s *blendmapShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		var val int
 		switch ren.minFilter {
 		case FilterNearest:
-			val = engo.Gl.NEAREST
+			val = tango.Gl.NEAREST
 		case FilterLinear:
-			val = engo.Gl.LINEAR
+			val = tango.Gl.LINEAR
 		}
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_MIN_FILTER, val)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MIN_FILTER, val)
 	}
 
 	// Update the vertex buffer data.
@@ -376,15 +376,15 @@ func (s *blendmapShader) Post() {
 	s.lastTexturePack = nil
 
 	// Cleanup
-	engo.Gl.DisableVertexAttribArray(s.inPosition)
-	engo.Gl.DisableVertexAttribArray(s.inTexCoords)
-	engo.Gl.DisableVertexAttribArray(s.inColor)
+	tango.Gl.DisableVertexAttribArray(s.inPosition)
+	tango.Gl.DisableVertexAttribArray(s.inTexCoords)
+	tango.Gl.DisableVertexAttribArray(s.inColor)
 
-	engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, nil)
-	engo.Gl.BindBuffer(engo.Gl.ARRAY_BUFFER, nil)
-	engo.Gl.BindBuffer(engo.Gl.ELEMENT_ARRAY_BUFFER, nil)
+	tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, nil)
+	tango.Gl.BindBuffer(tango.Gl.ARRAY_BUFFER, nil)
+	tango.Gl.BindBuffer(tango.Gl.ELEMENT_ARRAY_BUFFER, nil)
 
-	engo.Gl.Disable(engo.Gl.BLEND)
+	tango.Gl.Disable(tango.Gl.BLEND)
 }
 
 func (s *blendmapShader) flush() {
@@ -392,10 +392,10 @@ func (s *blendmapShader) flush() {
 	if s.idx == 0 {
 		return
 	}
-	engo.Gl.BufferData(engo.Gl.ARRAY_BUFFER, s.vertices, engo.Gl.STATIC_DRAW)
+	tango.Gl.BufferData(tango.Gl.ARRAY_BUFFER, s.vertices, tango.Gl.STATIC_DRAW)
 	// We only want to draw the indicies up to the number of sprites in the current batch.
 	count := s.idx / 20 * 6
-	engo.Gl.DrawElements(engo.Gl.TRIANGLES, count, engo.Gl.UNSIGNED_SHORT, 0)
+	tango.Gl.DrawElements(tango.Gl.TRIANGLES, count, tango.Gl.UNSIGNED_SHORT, 0)
 	s.idx = 0
 	// We need to reset the vertex buffer so that when we start drawing again, we don't accidentally use junk data.
 	// The "simpler" way to do this would be to just create a new slice with make(), however that would cause the
@@ -414,11 +414,11 @@ func (s *blendmapShader) updateBuffer(ren *RenderComponent, space *SpaceComponen
 	s.generateBufferContent(ren, space, ren.BufferContent)
 }
 
-func (s *blendmapShader) makeModelMatrix(ren *RenderComponent, space *SpaceComponent) *engo.Matrix {
+func (s *blendmapShader) makeModelMatrix(ren *RenderComponent, space *SpaceComponent) *tango.Matrix {
 	// Instead of creating a new model matrix every time, we instead store a global one as a struct member
 	// and just reset it for every sprite. This prevents us from allocating a bunch of new Matrix instances in memory
 	// ultimately saving on GC activity.
-	s.modelMatrix.Identity().Scale(engo.GetGlobalScale().X, engo.GetGlobalScale().Y).Translate(space.Position.X, space.Position.Y)
+	s.modelMatrix.Identity().Scale(tango.GetGlobalScale().X, tango.GetGlobalScale().Y).Translate(space.Position.X, space.Position.Y)
 	if space.Rotation != 0 {
 		s.modelMatrix.Rotate(space.Rotation)
 	}
@@ -481,8 +481,8 @@ func (s *blendmapShader) generateBufferContent(ren *RenderComponent, space *Spac
 	return changed
 }
 
-func (s *blendmapShader) multModel(m *engo.Matrix, v []float32) {
-	tmp := engo.MultiplyMatrixVector(m, v)
+func (s *blendmapShader) multModel(m *tango.Matrix, v []float32) {
+	tmp := tango.MultiplyMatrixVector(m, v)
 	v[0] = tmp[0]
 	v[1] = tmp[1]
 }

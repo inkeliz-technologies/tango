@@ -9,9 +9,9 @@ import (
 	"math/rand"
 	"sync"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type PongGame struct{}
@@ -43,13 +43,13 @@ type Paddle struct {
 }
 
 func (pong *PongGame) Preload() {
-	err := engo.Files.Load("Roboto-Regular.ttf", "ball.png", "paddle.png")
+	err := tango.Files.Load("Roboto-Regular.ttf", "ball.png", "paddle.png")
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func (pong *PongGame) Setup(u engo.Updater) {
+func (pong *PongGame) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.Black)
@@ -74,17 +74,17 @@ func (pong *PongGame) Setup(u engo.Updater) {
 	ball := Ball{BasicEntity: ecs.NewBasic()}
 	ball.RenderComponent = common.RenderComponent{
 		Drawable: ballTexture,
-		Scale:    engo.Point{2, 2},
+		Scale:    tango.Point{2, 2},
 	}
 	ball.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{(engo.GameWidth() - ballTexture.Width()) / 2, (engo.GameHeight() - ballTexture.Height()) / 2},
+		Position: tango.Point{(tango.GameWidth() - ballTexture.Width()) / 2, (tango.GameHeight() - ballTexture.Height()) / 2},
 		Width:    ballTexture.Width() * ball.RenderComponent.Scale.X,
 		Height:   ballTexture.Height() * ball.RenderComponent.Scale.Y,
 	}
 	ball.CollisionComponent = common.CollisionComponent{
 		Main: 1,
 	}
-	ball.SpeedComponent = SpeedComponent{Point: engo.Point{300, 1000}}
+	ball.SpeedComponent = SpeedComponent{Point: tango.Point{300, 1000}}
 
 	// Add our entity to the appropriate systems
 	for _, system := range w.Systems() {
@@ -104,7 +104,7 @@ func (pong *PongGame) Setup(u engo.Updater) {
 
 	score.RenderComponent = common.RenderComponent{Drawable: basicFont.Render(" ")}
 	score.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{100, 100},
+		Position: tango.Point{100, 100},
 		Width:    100,
 		Height:   100,
 	}
@@ -119,8 +119,8 @@ func (pong *PongGame) Setup(u engo.Updater) {
 		}
 	}
 
-	engo.Input.RegisterAxis("wasd", engo.AxisKeyPair{engo.KeyW, engo.KeyS})
-	engo.Input.RegisterAxis("arrows", engo.AxisKeyPair{engo.KeyArrowUp, engo.KeyArrowDown})
+	tango.Input.RegisterAxis("wasd", tango.AxisKeyPair{tango.KeyW, tango.KeyS})
+	tango.Input.RegisterAxis("arrows", tango.AxisKeyPair{tango.KeyArrowUp, tango.KeyArrowDown})
 
 	schemes := []string{"wasd", "arrows"}
 
@@ -133,16 +133,16 @@ func (pong *PongGame) Setup(u engo.Updater) {
 		paddle := Paddle{BasicEntity: ecs.NewBasic()}
 		paddle.RenderComponent = common.RenderComponent{
 			Drawable: paddleTexture,
-			Scale:    engo.Point{2, 2},
+			Scale:    tango.Point{2, 2},
 		}
 
 		x := float32(0)
 		if i != 0 {
-			x = engo.GameWidth() - 16
+			x = tango.GameWidth() - 16
 		}
 
 		paddle.SpaceComponent = common.SpaceComponent{
-			Position: engo.Point{x, (engo.GameHeight() - paddleTexture.Height()) / 2},
+			Position: tango.Point{x, (tango.GameHeight() - paddleTexture.Height()) / 2},
 			Width:    paddle.RenderComponent.Scale.X * paddleTexture.Width(),
 			Height:   paddle.RenderComponent.Scale.Y * paddleTexture.Height(),
 		}
@@ -168,7 +168,7 @@ func (pong *PongGame) Setup(u engo.Updater) {
 func (*PongGame) Type() string { return "PongGame" }
 
 type SpeedComponent struct {
-	engo.Point
+	tango.Point
 }
 
 type ControlComponent struct {
@@ -189,7 +189,7 @@ type SpeedSystem struct {
 }
 
 func (s *SpeedSystem) New(*ecs.World) {
-	engo.Mailbox.Listen("CollisionMessage", func(message engo.Message) {
+	tango.Mailbox.Listen("CollisionMessage", func(message tango.Message) {
 		log.Println("collision")
 
 		collision, isCollision := message.(common.CollisionMessage)
@@ -270,12 +270,12 @@ func (b *BounceSystem) Remove(basic ecs.BasicEntity) {
 func (b *BounceSystem) Update(dt float32) {
 	for _, e := range b.entities {
 		if e.SpaceComponent.Position.X < 0 {
-			engo.Mailbox.Dispatch(ScoreMessage{1})
+			tango.Mailbox.Dispatch(ScoreMessage{1})
 
-			e.SpaceComponent.Position.X = (engo.GameWidth() / 2) - 16
-			e.SpaceComponent.Position.Y = (engo.GameHeight() / 2) - 16
-			e.SpeedComponent.X = engo.GameWidth() * rand.Float32()
-			e.SpeedComponent.Y = engo.GameHeight() * rand.Float32()
+			e.SpaceComponent.Position.X = (tango.GameWidth() / 2) - 16
+			e.SpaceComponent.Position.Y = (tango.GameHeight() / 2) - 16
+			e.SpeedComponent.X = tango.GameWidth() * rand.Float32()
+			e.SpeedComponent.Y = tango.GameHeight() * rand.Float32()
 		}
 
 		if e.SpaceComponent.Position.Y < 0 {
@@ -283,17 +283,17 @@ func (b *BounceSystem) Update(dt float32) {
 			e.SpeedComponent.Y *= -1
 		}
 
-		if e.SpaceComponent.Position.X > (engo.GameWidth() - 16) {
-			engo.Mailbox.Dispatch(ScoreMessage{2})
+		if e.SpaceComponent.Position.X > (tango.GameWidth() - 16) {
+			tango.Mailbox.Dispatch(ScoreMessage{2})
 
-			e.SpaceComponent.Position.X = (engo.GameWidth() / 2) - 16
-			e.SpaceComponent.Position.Y = (engo.GameHeight() / 2) - 16
-			e.SpeedComponent.X = engo.GameWidth() * rand.Float32()
-			e.SpeedComponent.Y = engo.GameHeight() * rand.Float32()
+			e.SpaceComponent.Position.X = (tango.GameWidth() / 2) - 16
+			e.SpaceComponent.Position.Y = (tango.GameHeight() / 2) - 16
+			e.SpeedComponent.X = tango.GameWidth() * rand.Float32()
+			e.SpeedComponent.Y = tango.GameHeight() * rand.Float32()
 		}
 
-		if e.SpaceComponent.Position.Y > (engo.GameHeight() - 16) {
-			e.SpaceComponent.Position.Y = engo.GameHeight() - 16
+		if e.SpaceComponent.Position.Y > (tango.GameHeight() - 16) {
+			e.SpaceComponent.Position.Y = tango.GameHeight() - 16
 			e.SpeedComponent.Y *= -1
 		}
 	}
@@ -343,15 +343,15 @@ func (c *ControlSystem) Remove(basic ecs.BasicEntity) {
 
 func (c *ControlSystem) Update(dt float32) {
 	for _, e := range c.entities {
-		speed := engo.GameWidth() * dt
+		speed := tango.GameWidth() * dt
 
-		vert := engo.Input.Axis(e.ControlComponent.Scheme)
+		vert := tango.Input.Axis(e.ControlComponent.Scheme)
 		e.SpaceComponent.Position.Y += speed * vert.Value()
 
 		var moveThisOne bool
-		if engo.Input.Mouse.X > engo.WindowWidth()/2 && e.ControlComponent.Scheme == "arrows" {
+		if tango.Input.Mouse.X > tango.WindowWidth()/2 && e.ControlComponent.Scheme == "arrows" {
 			moveThisOne = true
-		} else if engo.Input.Mouse.X < engo.WindowWidth()/2 && e.ControlComponent.Scheme == "wasd" {
+		} else if tango.Input.Mouse.X < tango.WindowWidth()/2 && e.ControlComponent.Scheme == "wasd" {
 			moveThisOne = true
 		}
 
@@ -359,8 +359,8 @@ func (c *ControlSystem) Update(dt float32) {
 			e.SpaceComponent.Position.Y = c.mouseTrackerMouse.MouseY - e.SpaceComponent.Height/2
 		}
 
-		if (e.SpaceComponent.Height + e.SpaceComponent.Position.Y) > engo.GameHeight() {
-			e.SpaceComponent.Position.Y = engo.GameHeight() - e.SpaceComponent.Height
+		if (e.SpaceComponent.Height + e.SpaceComponent.Position.Y) > tango.GameHeight() {
+			e.SpaceComponent.Position.Y = tango.GameHeight() - e.SpaceComponent.Height
 		} else if e.SpaceComponent.Position.Y < 0 {
 			e.SpaceComponent.Position.Y = 0
 		}
@@ -383,7 +383,7 @@ type ScoreSystem struct {
 
 func (s *ScoreSystem) New(*ecs.World) {
 	s.upToDate = false
-	engo.Mailbox.Listen("ScoreMessage", func(message engo.Message) {
+	tango.Mailbox.Listen("ScoreMessage", func(message tango.Message) {
 		scoreMessage, isScore := message.(ScoreMessage)
 		if !isScore {
 			return
@@ -432,7 +432,7 @@ func (s *ScoreSystem) Update(dt float32) {
 			e.RenderComponent.Drawable = basicFont.Render(label)
 			width := float32(len(label)) * 20
 
-			e.SpaceComponent.Position.X = float32((engo.GameWidth() / 2) - (width / 2))
+			e.SpaceComponent.Position.X = float32((tango.GameWidth() / 2) - (width / 2))
 		}
 	}
 }
@@ -446,11 +446,11 @@ func (ScoreMessage) Type() string {
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:         "Pong Demo",
 		Width:         800,
 		Height:        800,
 		ScaleOnResize: true,
 	}
-	engo.Run(opts, &PongGame{})
+	tango.Run(opts, &PongGame{})
 }

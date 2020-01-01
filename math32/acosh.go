@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Acosh returns the inverse hyperbolic cosine of x.
@@ -11,5 +11,5 @@ import (
 //	Acosh(x) = NaN if x < 1
 //	Acosh(NaN) = NaN
 func Acosh(x float32) float32 {
-	return engomath.Acosh(x)
+	return math.Acosh(x)
 }

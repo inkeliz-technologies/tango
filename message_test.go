@@ -1,4 +1,4 @@
-package engo
+package tango
 
 import "testing"
 

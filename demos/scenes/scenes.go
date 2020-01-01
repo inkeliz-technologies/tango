@@ -8,9 +8,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 var (
@@ -34,13 +34,13 @@ type Rock struct {
 type IconScene struct{}
 
 func (*IconScene) Preload() {
-	err := engo.Files.Load("icon.png")
+	err := tango.Files.Load("icon.png")
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func (*IconScene) Setup(u engo.Updater) {
+func (*IconScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -61,10 +61,10 @@ func (*IconScene) Setup(u engo.Updater) {
 	// Initialize the components, set scale to 8x
 	guy.RenderComponent = common.RenderComponent{
 		Drawable: texture,
-		Scale:    engo.Point{8, 8},
+		Scale:    tango.Point{8, 8},
 	}
 	guy.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{0, 0},
+		Position: tango.Point{0, 0},
 		Width:    texture.Width() * guy.RenderComponent.Scale.X,
 		Height:   texture.Height() * guy.RenderComponent.Scale.Y,
 	}
@@ -94,13 +94,13 @@ func (*IconScene) Type() string { return "IconScene" }
 type RockScene struct{}
 
 func (*RockScene) Preload() {
-	err := engo.Files.Load("rock.png")
+	err := tango.Files.Load("rock.png")
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func (game *RockScene) Setup(u engo.Updater) {
+func (game *RockScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -121,10 +121,10 @@ func (game *RockScene) Setup(u engo.Updater) {
 	// Initialize the components, set scale to 8x
 	rock.RenderComponent = common.RenderComponent{
 		Drawable: texture,
-		Scale:    engo.Point{8, 8},
+		Scale:    tango.Point{8, 8},
 	}
 	rock.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{0, 0},
+		Position: tango.Point{0, 0},
 		Width:    texture.Width() * rock.RenderComponent.Scale.X,
 		Height:   texture.Height() * rock.RenderComponent.Scale.Y,
 	}
@@ -166,7 +166,7 @@ func (s *SceneSwitcherSystem) Update(dt float32) {
 		s.secondsWaited = 0
 
 		// Change the world to s.NextScene, and don't override / force World re-creation
-		engo.SetSceneByName(s.NextScene, false)
+		tango.SetSceneByName(s.NextScene, false)
 
 		log.Println("Switched to", s.NextScene)
 	}
@@ -223,14 +223,14 @@ func main() {
 	rockScene = &RockScene{}
 
 	// Register other Scenes for later use, this can be done from anywhere, as long as it
-	// happens before calling engo.SetSceneByName
-	engo.RegisterScene(rockScene)
+	// happens before calling tango.SetSceneByName
+	tango.RegisterScene(rockScene)
 
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Scenes Demo",
 		Width:  1024,
 		Height: 640,
 	}
 
-	engo.Run(opts, iconScene)
+	tango.Run(opts, iconScene)
 }

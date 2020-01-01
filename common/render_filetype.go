@@ -17,8 +17,8 @@ import (
 	"github.com/srwiley/oksvg"
 	"github.com/srwiley/rasterx"
 
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/gl"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/gl"
 )
 
 // TextureResource is the resource used by the RenderSystem. It uses .jpg, .gif, and .png images
@@ -72,7 +72,7 @@ func (i *imageLoader) Unload(url string) error {
 	return nil
 }
 
-func (i *imageLoader) Resource(url string) (engo.Resource, error) {
+func (i *imageLoader) Resource(url string) (tango.Resource, error) {
 	texture, ok := i.images[url]
 	if !ok {
 		return nil, fmt.Errorf("resource not loaded by `FileLoader`: %q", url)
@@ -91,21 +91,21 @@ type Image interface {
 // UploadTexture sends the image to the GPU, to be kept in GPU RAM
 func UploadTexture(img Image) *gl.Texture {
 	var id *gl.Texture
-	if !engo.Headless() {
-		id = engo.Gl.CreateTexture()
+	if !tango.Headless() {
+		id = tango.Gl.CreateTexture()
 
-		engo.Gl.BindTexture(engo.Gl.TEXTURE_2D, id)
+		tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, id)
 
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_S, engo.Gl.CLAMP_TO_EDGE)
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_WRAP_T, engo.Gl.CLAMP_TO_EDGE)
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_MIN_FILTER, engo.Gl.LINEAR)
-		engo.Gl.TexParameteri(engo.Gl.TEXTURE_2D, engo.Gl.TEXTURE_MAG_FILTER, engo.Gl.NEAREST)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, tango.Gl.CLAMP_TO_EDGE)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, tango.Gl.CLAMP_TO_EDGE)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MIN_FILTER, tango.Gl.LINEAR)
+		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MAG_FILTER, tango.Gl.NEAREST)
 
 		if img.Data() == nil {
 			panic("Texture image data is nil.")
 		}
 
-		engo.Gl.TexImage2D(engo.Gl.TEXTURE_2D, 0, engo.Gl.RGBA, engo.Gl.RGBA, engo.Gl.UNSIGNED_BYTE, img.Data())
+		tango.Gl.TexImage2D(tango.Gl.TEXTURE_2D, 0, tango.Gl.RGBA, tango.Gl.RGBA, tango.Gl.UNSIGNED_BYTE, img.Data())
 	}
 	return id
 }
@@ -119,11 +119,11 @@ func NewTextureResource(img Image) TextureResource {
 // NewTextureSingle sends the image to the GPU and returns a `Texture` with a viewport for single-sprite images
 func NewTextureSingle(img Image) Texture {
 	id := UploadTexture(img)
-	return Texture{id, float32(img.Width()), float32(img.Height()), engo.AABB{Max: engo.Point{X: 1.0, Y: 1.0}}}
+	return Texture{id, float32(img.Width()), float32(img.Height()), tango.AABB{Max: tango.Point{X: 1.0, Y: 1.0}}}
 }
 
 // ImageToNRGBA takes a given `image.Image` and converts it into an `image.NRGBA`. Especially useful when transforming
-// image.Uniform to something usable by `engo`.
+// image.Uniform to something usable by `tango`.
 func ImageToNRGBA(img image.Image, width, height int) *image.NRGBA {
 	newm := image.NewNRGBA(image.Rect(0, 0, width, height))
 	draw.Draw(newm, newm.Bounds(), img, image.Point{0, 0}, draw.Src)
@@ -156,10 +156,10 @@ func (i *ImageObject) Height() int {
 	return i.data.Rect.Max.Y
 }
 
-// LoadedSprite loads the texture-reference from `engo.Files`, and wraps it in a `*Texture`.
+// LoadedSprite loads the texture-reference from `tango.Files`, and wraps it in a `*Texture`.
 // This method is intended for image-files which represent entire sprites.
 func LoadedSprite(url string) (*Texture, error) {
-	res, err := engo.Files.Resource(url)
+	res, err := tango.Files.Resource(url)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func LoadedSprite(url string) (*Texture, error) {
 		return nil, fmt.Errorf("resource not of type `TextureResource`: %s", url)
 	}
 
-	return &Texture{img.Texture, img.Width, img.Height, engo.AABB{Max: engo.Point{X: 1.0, Y: 1.0}}}, nil
+	return &Texture{img.Texture, img.Width, img.Height, tango.AABB{Max: tango.Point{X: 1.0, Y: 1.0}}}, nil
 }
 
 // Texture represents a texture loaded in the GPU RAM (by using OpenGL), which defined dimensions and viewport
@@ -177,7 +177,7 @@ type Texture struct {
 	id       *gl.Texture
 	width    float32
 	height   float32
-	viewport engo.AABB
+	viewport tango.AABB
 }
 
 // Width returns the width of the texture.
@@ -202,14 +202,14 @@ func (t Texture) View() (float32, float32, float32, float32) {
 
 // Close removes the Texture data from the GPU.
 func (t Texture) Close() {
-	if !engo.Headless() {
-		engo.Gl.DeleteTexture(t.id)
+	if !tango.Headless() {
+		tango.Gl.DeleteTexture(t.id)
 	}
 }
 
 func init() {
-	engo.Files.Register(".jpg", &imageLoader{images: make(map[string]TextureResource)})
-	engo.Files.Register(".png", &imageLoader{images: make(map[string]TextureResource)})
-	engo.Files.Register(".gif", &imageLoader{images: make(map[string]TextureResource)})
-	engo.Files.Register(".svg", &imageLoader{images: make(map[string]TextureResource)})
+	tango.Files.Register(".jpg", &imageLoader{images: make(map[string]TextureResource)})
+	tango.Files.Register(".png", &imageLoader{images: make(map[string]TextureResource)})
+	tango.Files.Register(".gif", &imageLoader{images: make(map[string]TextureResource)})
+	tango.Files.Register(".svg", &imageLoader{images: make(map[string]TextureResource)})
 }

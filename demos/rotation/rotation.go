@@ -6,10 +6,10 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
-	"github.com/EngoEngine/engo/math"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
+	"github.com/inkeliz-technologies/tango/math32"
 )
 
 type Guy struct {
@@ -21,13 +21,13 @@ type Guy struct {
 type DefaultScene struct{}
 
 func (game *DefaultScene) Preload() {
-	err := engo.Files.Load("icon.png")
+	err := tango.Files.Load("icon.png")
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func (game *DefaultScene) Setup(u engo.Updater) {
+func (game *DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -47,10 +47,10 @@ func (game *DefaultScene) Setup(u engo.Updater) {
 	// Initialize the components, set scale to 8x
 	guy.RenderComponent = common.RenderComponent{
 		Drawable: texture,
-		Scale:    engo.Point{8, 8},
+		Scale:    tango.Point{8, 8},
 	}
 	guy.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{200, 200},
+		Position: tango.Point{200, 200},
 		Width:    texture.Width() * guy.RenderComponent.Scale.X,
 		Height:   texture.Height() * guy.RenderComponent.Scale.Y,
 	}
@@ -94,23 +94,23 @@ func (r *RotationSystem) Remove(basic ecs.BasicEntity) {
 
 func (r *RotationSystem) Update(dt float32) {
 	// speed in radians per second
-	var speed float32 = math.Pi
+	var speed float32 = math32.Pi
 	// speed in degrees per second
-	var speedDegrees float32 = speed * 180 / math.Pi
+	var speedDegrees float32 = speed * 180 / math32.Pi
 
 	for _, e := range r.entities {
 		e.SpaceComponent.Rotation += speedDegrees * dt
-		e.SpaceComponent.Rotation = math.Mod(e.SpaceComponent.Rotation, 360)
+		e.SpaceComponent.Rotation = math32.Mod(e.SpaceComponent.Rotation, 360)
 	}
 }
 
 func (*DefaultScene) Type() string { return "GameWorld" }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Rotation Demo",
 		Width:  1024,
 		Height: 640,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

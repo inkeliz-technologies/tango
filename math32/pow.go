@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Pow returns x**y, the base-x exponential of y.
@@ -28,5 +28,5 @@ import (
 //	Pow(-Inf, y) = Pow(-0, -y)
 //	Pow(x, y) = NaN for finite x < 0 and finite non-integer y
 func Pow(x, y float32) float32 {
-	return engomath.Pow(x, y)
+	return math.Pow(x, y)
 }

@@ -1,4 +1,4 @@
-package engo
+package tango
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ func (*assetTestScene) Type() string { return "testScene" }
 
 // TestSetRoot makes sure set root sets Files.root to the proper value.
 func TestFilesSetRoot(t *testing.T) {
-	// Start an instance of engo
+	// Start an instance of tango
 	Run(RunOptions{
 		NoRun:        true,
 		HeadlessMode: true,

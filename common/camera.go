@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/math"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/math32"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -40,7 +40,7 @@ var (
 	MaxZoom float32 = 3
 
 	// CameraBounds is the bounding box of the camera
-	CameraBounds engo.AABB
+	CameraBounds tango.AABB
 )
 
 type cameraEntity struct {
@@ -76,7 +76,7 @@ func (cam *CameraSystem) New(w *ecs.World) {
 	}
 
 	if CameraBounds.Max.X == 0 && CameraBounds.Max.Y == 0 {
-		CameraBounds.Max = engo.Point{X: engo.GameWidth(), Y: engo.GameHeight()}
+		CameraBounds.Max = tango.Point{X: tango.GameWidth(), Y: tango.GameHeight()}
 	}
 
 	cam.x = CameraBounds.Max.X / 2
@@ -85,7 +85,7 @@ func (cam *CameraSystem) New(w *ecs.World) {
 
 	cam.longTasks = make(map[CameraAxis]*CameraMessage)
 
-	engo.Mailbox.Listen("CameraMessage", func(msg engo.Message) {
+	tango.Mailbox.Listen("CameraMessage", func(msg tango.Message) {
 		cammsg, ok := msg.(CameraMessage)
 		if !ok {
 			return
@@ -126,7 +126,7 @@ func (cam *CameraSystem) New(w *ecs.World) {
 		}
 	})
 
-	engo.Mailbox.Dispatch(NewCameraMessage{})
+	tango.Mailbox.Dispatch(NewCameraMessage{})
 }
 
 // Remove does nothing since the CameraSystem has only one entity, the camera itself.
@@ -221,22 +221,22 @@ func (cam *CameraSystem) Angle() float32 {
 }
 
 func (cam *CameraSystem) moveX(value float32) {
-	if cam.x+(value*engo.GetGlobalScale().X) > CameraBounds.Max.X*engo.GetGlobalScale().X {
-		cam.x = CameraBounds.Max.X * engo.GetGlobalScale().X
-	} else if cam.x+(value*engo.GetGlobalScale().X) < CameraBounds.Min.X*engo.GetGlobalScale().X {
-		cam.x = CameraBounds.Min.X * engo.GetGlobalScale().X
+	if cam.x+(value*tango.GetGlobalScale().X) > CameraBounds.Max.X*tango.GetGlobalScale().X {
+		cam.x = CameraBounds.Max.X * tango.GetGlobalScale().X
+	} else if cam.x+(value*tango.GetGlobalScale().X) < CameraBounds.Min.X*tango.GetGlobalScale().X {
+		cam.x = CameraBounds.Min.X * tango.GetGlobalScale().X
 	} else {
-		cam.x += value * engo.GetGlobalScale().X
+		cam.x += value * tango.GetGlobalScale().X
 	}
 }
 
 func (cam *CameraSystem) moveY(value float32) {
-	if cam.y+(value*engo.GetGlobalScale().Y) > CameraBounds.Max.Y*engo.GetGlobalScale().Y {
-		cam.y = CameraBounds.Max.Y * engo.GetGlobalScale().Y
-	} else if cam.y+(value*engo.GetGlobalScale().Y) < CameraBounds.Min.Y*engo.GetGlobalScale().Y {
-		cam.y = CameraBounds.Min.Y * engo.GetGlobalScale().Y
+	if cam.y+(value*tango.GetGlobalScale().Y) > CameraBounds.Max.Y*tango.GetGlobalScale().Y {
+		cam.y = CameraBounds.Max.Y * tango.GetGlobalScale().Y
+	} else if cam.y+(value*tango.GetGlobalScale().Y) < CameraBounds.Min.Y*tango.GetGlobalScale().Y {
+		cam.y = CameraBounds.Min.Y * tango.GetGlobalScale().Y
 	} else {
-		cam.y += value * engo.GetGlobalScale().Y
+		cam.y += value * tango.GetGlobalScale().Y
 	}
 }
 
@@ -249,11 +249,11 @@ func (cam *CameraSystem) rotate(value float32) {
 }
 
 func (cam *CameraSystem) moveToX(location float32) {
-	cam.x = mgl32.Clamp(location*engo.GetGlobalScale().X, CameraBounds.Min.X*engo.GetGlobalScale().X, CameraBounds.Max.X*engo.GetGlobalScale().X)
+	cam.x = mgl32.Clamp(location*tango.GetGlobalScale().X, CameraBounds.Min.X*tango.GetGlobalScale().X, CameraBounds.Max.X*tango.GetGlobalScale().X)
 }
 
 func (cam *CameraSystem) moveToY(location float32) {
-	cam.y = mgl32.Clamp(location*engo.GetGlobalScale().Y, CameraBounds.Min.Y*engo.GetGlobalScale().Y, CameraBounds.Max.Y*engo.GetGlobalScale().Y)
+	cam.y = mgl32.Clamp(location*tango.GetGlobalScale().Y, CameraBounds.Min.Y*tango.GetGlobalScale().Y, CameraBounds.Max.Y*tango.GetGlobalScale().Y)
 }
 
 func (cam *CameraSystem) zoomTo(zoomLevel float32) {
@@ -261,7 +261,7 @@ func (cam *CameraSystem) zoomTo(zoomLevel float32) {
 }
 
 func (cam *CameraSystem) rotateTo(rotation float32) {
-	cam.angle = math.Mod(rotation, 360)
+	cam.angle = math32.Mod(rotation, 360)
 }
 
 func (cam *CameraSystem) centerCam(x, y, z float32) {
@@ -294,7 +294,7 @@ type CameraMessage struct {
 	speed       float32
 }
 
-// Type implements the engo.Message interface.
+// Type implements the tango.Message interface.
 func (CameraMessage) Type() string {
 	return "CameraMessage"
 }
@@ -303,7 +303,7 @@ func (CameraMessage) Type() string {
 // such as when a new world is created or scenes are switched.
 type NewCameraMessage struct{}
 
-// Type implements the engo.Message interface.
+// Type implements the tango.Message interface.
 func (NewCameraMessage) Type() string {
 	return "NewCameraMessage"
 }
@@ -327,13 +327,13 @@ func (c *KeyboardScroller) Update(dt float32) {
 	c.keysMu.RLock()
 	defer c.keysMu.RUnlock()
 
-	m := engo.Point{
-		X: engo.Input.Axis(c.horizontalAxis).Value(),
-		Y: engo.Input.Axis(c.verticalAxis).Value(),
+	m := tango.Point{
+		X: tango.Input.Axis(c.horizontalAxis).Value(),
+		Y: tango.Input.Axis(c.verticalAxis).Value(),
 	}
 	n, _ := m.Normalize()
-	engo.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: n.X * c.ScrollSpeed * dt, Incremental: true})
-	engo.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: n.Y * c.ScrollSpeed * dt, Incremental: true})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: n.X * c.ScrollSpeed * dt, Incremental: true})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: n.Y * c.ScrollSpeed * dt, Incremental: true})
 }
 
 // BindKeyboard sets the vertical and horizontal axes used by the KeyboardScroller.
@@ -361,19 +361,19 @@ func NewKeyboardScroller(scrollSpeed float32, hori, vert string) *KeyboardScroll
 // EntityScroller scrolls the camera to the position of a entity using its space component.
 type EntityScroller struct {
 	*SpaceComponent
-	TrackingBounds engo.AABB
+	TrackingBounds tango.AABB
 	Rotation       bool
 }
 
 // New adjusts CameraBounds to the bounds of EntityScroller.
 func (c *EntityScroller) New(*ecs.World) {
-	offsetX, offsetY := engo.GameWidth()/2, engo.GameHeight()/2
+	offsetX, offsetY := tango.GameWidth()/2, tango.GameHeight()/2
 
-	CameraBounds.Min.X = c.TrackingBounds.Min.X + (offsetX / engo.GetGlobalScale().X)
-	CameraBounds.Min.Y = c.TrackingBounds.Min.Y + (offsetY / engo.GetGlobalScale().Y)
+	CameraBounds.Min.X = c.TrackingBounds.Min.X + (offsetX / tango.GetGlobalScale().X)
+	CameraBounds.Min.Y = c.TrackingBounds.Min.Y + (offsetY / tango.GetGlobalScale().Y)
 
-	CameraBounds.Max.X = c.TrackingBounds.Max.X - (offsetX / engo.GetGlobalScale().X)
-	CameraBounds.Max.Y = c.TrackingBounds.Max.Y - (offsetY / engo.GetGlobalScale().Y)
+	CameraBounds.Max.X = c.TrackingBounds.Max.X - (offsetX / tango.GetGlobalScale().X)
+	CameraBounds.Max.Y = c.TrackingBounds.Max.Y - (offsetY / tango.GetGlobalScale().Y)
 }
 
 // Priority implements the ecs.Prioritizer interface.
@@ -396,10 +396,10 @@ func (c *EntityScroller) Update(dt float32) {
 	trackToX := pos.X + width/2
 	trackToY := pos.Y + height/2
 
-	engo.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: trackToX, Incremental: false})
-	engo.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: trackToY, Incremental: false})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: trackToX, Incremental: false})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: trackToY, Incremental: false})
 	if c.Rotation {
-		engo.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: c.SpaceComponent.Rotation, Incremental: false})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: c.SpaceComponent.Rotation, Incremental: false})
 	}
 }
 
@@ -421,33 +421,33 @@ func (*EdgeScroller) Remove(ecs.BasicEntity) {}
 // of the screen, the camera moves towards that edge.
 // TODO: Warning doesn't get the cursor position
 func (c *EdgeScroller) Update(dt float32) {
-	curX, curY := engo.CursorPos()
-	maxX, maxY := engo.GameWidth(), engo.GameHeight()
+	curX, curY := tango.CursorPos()
+	maxX, maxY := tango.GameWidth(), tango.GameHeight()
 
 	if curX < c.EdgeMargin && curY < c.EdgeMargin {
-		s := math.Sqrt(2)
-		engo.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
-		engo.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
+		s := math32.Sqrt(2)
+		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
 	} else if curX < c.EdgeMargin && curY > maxY-c.EdgeMargin {
-		s := math.Sqrt(2)
-		engo.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
-		engo.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
+		s := math32.Sqrt(2)
+		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
 	} else if curX > maxX-c.EdgeMargin && curY < c.EdgeMargin {
-		s := math.Sqrt(2)
-		engo.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
-		engo.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
+		s := math32.Sqrt(2)
+		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
 	} else if curX > maxX-c.EdgeMargin && curY > maxY-c.EdgeMargin {
-		s := math.Sqrt(2)
-		engo.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
-		engo.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
+		s := math32.Sqrt(2)
+		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
 	} else if curX < c.EdgeMargin {
-		engo.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt, Incremental: true})
 	} else if curX > maxX-c.EdgeMargin {
-		engo.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt, Incremental: true})
 	} else if curY < c.EdgeMargin {
-		engo.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt, Incremental: true})
 	} else if curY > maxY-c.EdgeMargin {
-		engo.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt, Incremental: true})
 	}
 }
 
@@ -465,8 +465,8 @@ func (*MouseZoomer) Remove(ecs.BasicEntity) {}
 
 // Update zooms the camera in and out based on the movement of the scroll wheel.
 func (c *MouseZoomer) Update(float32) {
-	if engo.Input.Mouse.ScrollY != 0 {
-		engo.Mailbox.Dispatch(CameraMessage{Axis: ZAxis, Value: engo.Input.Mouse.ScrollY * c.ZoomSpeed, Incremental: true})
+	if tango.Input.Mouse.ScrollY != 0 {
+		tango.Mailbox.Dispatch(CameraMessage{Axis: ZAxis, Value: tango.Input.Mouse.ScrollY * c.ZoomSpeed, Incremental: true})
 	}
 }
 
@@ -490,17 +490,17 @@ func (*MouseRotator) Remove(ecs.BasicEntity) {}
 
 // Update rotates the camera if the scroll wheel is pressed down.
 func (c *MouseRotator) Update(float32) {
-	if engo.Input.Mouse.Button == engo.MouseButtonMiddle && engo.Input.Mouse.Action == engo.Press {
+	if tango.Input.Mouse.Button == tango.MouseButtonMiddle && tango.Input.Mouse.Action == tango.Press {
 		c.pressed = true
 	}
 
-	if engo.Input.Mouse.Action == engo.Release {
+	if tango.Input.Mouse.Action == tango.Release {
 		c.pressed = false
 	}
 
 	if c.pressed {
-		engo.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: (c.oldX - engo.Input.Mouse.X) * -c.RotationSpeed, Incremental: true})
+		tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: (c.oldX - tango.Input.Mouse.X) * -c.RotationSpeed, Incremental: true})
 	}
 
-	c.oldX = engo.Input.Mouse.X
+	c.oldX = tango.Input.Mouse.X
 }

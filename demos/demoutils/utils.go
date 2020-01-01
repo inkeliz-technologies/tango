@@ -6,9 +6,9 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type Background struct {
@@ -46,7 +46,7 @@ func NewBackground(world *ecs.World, width, height int, colorA, colorB color.Col
 	bg := &Background{BasicEntity: ecs.NewBasic()}
 	bg.RenderComponent = common.RenderComponent{Drawable: common.NewTextureSingle(bgTexture)}
 	bg.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{0, 0},
+		Position: tango.Point{0, 0},
 		Width:    float32(width),
 		Height:   float32(height),
 	}

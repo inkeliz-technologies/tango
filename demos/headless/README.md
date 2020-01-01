@@ -7,7 +7,7 @@ It copies 100% of the code at `pong/pong.go`, but attempts to run it in headless
 
 Originally, `pong.go` has: 
 ```go
-opts := engo.RunOptions{
+opts := tango.RunOptions{
     Title:         "Pong Demo",
     Width:         800,
     Height:        800,
@@ -17,7 +17,7 @@ opts := engo.RunOptions{
 
 In order to turn it into headless mode, all we had to do, was change it to this:
 ```go
-opts := engo.RunOptions{
+opts := tango.RunOptions{
     HeadlessMode: true,
 }
 ```

@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
 )
 
 type testAudio struct {
@@ -27,12 +27,12 @@ type testAudioScene struct {
 func (*testAudioScene) Type() string { return "TestAudioScene" }
 
 func (*testAudioScene) Preload() {
-	if err := engo.Files.Load("1.ogg", "sfx_coin_double2.wav", "TripleShot.mp3"); err != nil {
+	if err := tango.Files.Load("1.ogg", "sfx_coin_double2.wav", "TripleShot.mp3"); err != nil {
 		panic(err)
 	}
 }
 
-func (t *testAudioScene) Setup(u engo.Updater) {
+func (t *testAudioScene) Setup(u tango.Updater) {
 	var err error
 	t.w = u.(*ecs.World)
 	t.audioSystem = &AudioSystem{}
@@ -58,12 +58,12 @@ func (t *testAudioScene) Setup(u engo.Updater) {
 }
 
 // TestAudioSystemIntegrationNormalUse tests using the AudioSystem as a part of
-// engo. It doesn't fail on data because sometimes things "slip" and the data doesn't
+// tango. It doesn't fail on data because sometimes things "slip" and the data doesn't
 // come out exactly right, but that's okay. If the audio system changes, check
 // the logs and rerun accordingly.
 func TestAudioSystemIntegrationNormalUse(t *testing.T) {
 	s := testAudioScene{}
-	engo.Run(engo.RunOptions{
+	tango.Run(tango.RunOptions{
 		HeadlessMode: true,
 		NoRun:        true,
 		AssetsRoot:   "testdata",
@@ -122,8 +122,8 @@ func TestAudioSystemIntegrationNormalUse(t *testing.T) {
 }
 
 func TestAudioLoaderLoadOgg(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("1.ogg"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("1.ogg"); err != nil {
 		t.Errorf("Error while loading. Error: %v", err)
 	}
 	_, err := LoadedPlayer("1.ogg")
@@ -134,8 +134,8 @@ func TestAudioLoaderLoadOgg(t *testing.T) {
 }
 
 func TestAudioLoaderLoadWav(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("sfx_coin_double2.wav"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("sfx_coin_double2.wav"); err != nil {
 		t.Errorf("Error while loading. Error: %v", err)
 	}
 	_, err := LoadedPlayer("sfx_coin_double2.wav")
@@ -146,8 +146,8 @@ func TestAudioLoaderLoadWav(t *testing.T) {
 }
 
 func TestAudioLoaderLoadMP3(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("TripleShot.mp3"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("TripleShot.mp3"); err != nil {
 		t.Errorf("Error while loading. Error: %v", err)
 	}
 	_, err := LoadedPlayer("TripleShot.mp3")
@@ -170,39 +170,39 @@ func (t testReader) Read(p []byte) (int, error) {
 
 func TestAudioLoaderLoadReadallError(t *testing.T) {
 	tr := testReader{readError: true}
-	if err := engo.Files.LoadReaderData("test.mp3", tr); err == nil {
+	if err := tango.Files.LoadReaderData("test.mp3", tr); err == nil {
 		t.Error("Malformed io.Reader did not throw the error while being read.")
 	}
-	if err := engo.Files.LoadReaderData("test.wav", tr); err == nil {
+	if err := tango.Files.LoadReaderData("test.wav", tr); err == nil {
 		t.Error("Malformed io.Reader did not throw the error while being read.")
 	}
-	if err := engo.Files.LoadReaderData("test.ogg", tr); err == nil {
+	if err := tango.Files.LoadReaderData("test.ogg", tr); err == nil {
 		t.Error("Malformed io.Reader did not throw the error while being read.")
 	}
 }
 
 func TestAudioLoaderLoadDecodeError(t *testing.T) {
 	tr := testReader{}
-	if err := engo.Files.LoadReaderData("test.mp3", tr); err == nil {
+	if err := tango.Files.LoadReaderData("test.mp3", tr); err == nil {
 		t.Error("Malformed io.Reader did not throw the error while being loaded.")
 	}
-	if err := engo.Files.LoadReaderData("test.wav", tr); err == nil {
+	if err := tango.Files.LoadReaderData("test.wav", tr); err == nil {
 		t.Error("Malformed io.Reader did not throw the error while being loaded.")
 	}
-	if err := engo.Files.LoadReaderData("test.ogg", tr); err == nil {
+	if err := tango.Files.LoadReaderData("test.ogg", tr); err == nil {
 		t.Error("Malformed io.Reader did not throw the error while being loaded.")
 	}
 }
 
 func TestAudioLoaderUnload(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("sfx_coin_double2.wav"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("sfx_coin_double2.wav"); err != nil {
 		t.Errorf("Could not load file. Error was: %v\n", err)
 	}
 	if _, err := LoadedPlayer("sfx_coin_double2.wav"); err != nil {
 		t.Errorf("Coud not get player from loaded file. Error was: %v\n", err)
 	}
-	if err := engo.Files.Unload("sfx_coin_double2.wav"); err != nil {
+	if err := tango.Files.Unload("sfx_coin_double2.wav"); err != nil {
 		t.Errorf("Could not unload file. Error was: %v\n", err)
 	}
 	if _, err := LoadedPlayer("sfx_coin_double2.wav"); err == nil {
@@ -215,8 +215,8 @@ func TestAudioLoaderUnload(t *testing.T) {
 }
 
 func TestAudioPlayerURL(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("1.ogg"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("1.ogg"); err != nil {
 		t.Errorf("Could not load file. Error was: %v\n", err)
 	}
 	p, err := LoadedPlayer("1.ogg")
@@ -229,8 +229,8 @@ func TestAudioPlayerURL(t *testing.T) {
 }
 
 func TestAudioPlayerClose(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("1.ogg"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("1.ogg"); err != nil {
 		t.Errorf("Could not load file. Error was: %v\n", err)
 	}
 	p, err := LoadedPlayer("1.ogg")
@@ -250,8 +250,8 @@ func TestAudioPlayerClose(t *testing.T) {
 }
 
 func TestAudioPlayerPlay(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("1.ogg"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("1.ogg"); err != nil {
 		t.Errorf("Could not load file. Error was: %v\n", err)
 	}
 	p, err := LoadedPlayer("1.ogg")
@@ -280,8 +280,8 @@ func TestAudioPlayerPlay(t *testing.T) {
 }
 
 func TestAudioPlayerSeek(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("1.ogg"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("1.ogg"); err != nil {
 		t.Errorf("Could not load file. Error was: %v\n", err)
 	}
 	p, err := LoadedPlayer("1.ogg")
@@ -306,8 +306,8 @@ func TestAudioPlayerSeek(t *testing.T) {
 }
 
 func TestAudioPlayerVolume(t *testing.T) {
-	engo.Files.SetRoot("testdata")
-	if err := engo.Files.Load("1.ogg"); err != nil {
+	tango.Files.SetRoot("testdata")
+	if err := tango.Files.Load("1.ogg"); err != nil {
 		t.Errorf("Could not load file. Error was: %v\n", err)
 	}
 	p, err := LoadedPlayer("1.ogg")

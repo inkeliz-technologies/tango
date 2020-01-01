@@ -7,13 +7,13 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common/internal/decode/mp3"
-	"github.com/EngoEngine/engo/common/internal/decode/vorbis"
-	"github.com/EngoEngine/engo/common/internal/decode/wav"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common/internal/decode/mp3"
+	"github.com/inkeliz-technologies/tango/common/internal/decode/vorbis"
+	"github.com/inkeliz-technologies/tango/common/internal/decode/wav"
 )
 
-// audioLoader is responsible for managing audio files within `engo.Files`
+// audioLoader is responsible for managing audio files within `tango.Files`
 type audioLoader struct {
 	audios map[string]*Player
 }
@@ -73,7 +73,7 @@ func (a *audioLoader) Unload(url string) error {
 }
 
 // Resource retrieves the preloaded audio file, passed as a `AudioResource`
-func (a *audioLoader) Resource(url string) (engo.Resource, error) {
+func (a *audioLoader) Resource(url string) (tango.Resource, error) {
 	texture, ok := a.audios[url]
 	if !ok {
 		return nil, fmt.Errorf("resource not loaded by `FileLoader`: %q", url)
@@ -84,7 +84,7 @@ func (a *audioLoader) Resource(url string) (engo.Resource, error) {
 
 // LoadedPlayer retrieves the *audio.Player created from the URL
 func LoadedPlayer(url string) (*Player, error) {
-	res, err := engo.Files.Resource(url)
+	res, err := tango.Files.Resource(url)
 	if err != nil {
 		return nil, err
 	}
@@ -116,9 +116,9 @@ func (r *readSeekCloserBuffer) Seek(offset int64, whence int) (int64, error) {
 }
 
 func init() {
-	engo.Files.Register(".wav", &audioLoader{audios: make(map[string]*Player)})
-	engo.Files.Register(".mp3", &audioLoader{audios: make(map[string]*Player)})
-	engo.Files.Register(".ogg", &audioLoader{audios: make(map[string]*Player)})
+	tango.Files.Register(".wav", &audioLoader{audios: make(map[string]*Player)})
+	tango.Files.Register(".mp3", &audioLoader{audios: make(map[string]*Player)})
+	tango.Files.Register(".ogg", &audioLoader{audios: make(map[string]*Player)})
 }
 
 // getExt returns the extension of the file(including extensions with `.` in them) from the given url.

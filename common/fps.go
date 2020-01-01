@@ -6,8 +6,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
 
 	"golang.org/x/image/font/gofont/gomonobold"
 )
@@ -28,7 +28,7 @@ type FPSSystem struct {
 // New is called when FPSSystem is added to the world
 func (f *FPSSystem) New(w *ecs.World) {
 	if f.Display {
-		if err := engo.Files.LoadReaderData("gomonobold_fps.ttf", bytes.NewReader(gomonobold.TTF)); err != nil {
+		if err := tango.Files.LoadReaderData("gomonobold_fps.ttf", bytes.NewReader(gomonobold.TTF)); err != nil {
 			panic("unable to load gomonobold.ttf for the fps system! Error was: " + err.Error())
 		}
 		f.fnt = &Font{

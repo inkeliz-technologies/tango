@@ -1,7 +1,7 @@
 # Contributing
 
 Contributions are welcome! If you want to know where to start,
-look at the [issues](https://github.com/EngoEngine/engo/issues) on github.
+look at the [issues](https://github.com/inkeliz-technologies/tango/issues) on github.
 
 We are always looking for more documentation and better test coverage.
 
@@ -35,4 +35,4 @@ a PR with tests is more favourable than one without.
 ### Questions
 
 As it says in the README, ask questions, we are on gitter:
-[![Join the chat at https://gitter.im/EngoEngine/engo](https://badges.gitter.im/EngoEngine/engo.svg)](https://gitter.im/EngoEngine/engo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/tangoEngine/tango](https://badges.gitter.im/tangoEngine/tango.svg)](https://gitter.im/tangoEngine/tango?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)

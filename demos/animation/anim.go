@@ -5,9 +5,9 @@ package main
 import (
 	"image/color"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 var (
@@ -30,18 +30,18 @@ type Animation struct {
 }
 
 func (*DefaultScene) Preload() {
-	engo.Files.Load("hero.png")
+	tango.Files.Load("hero.png")
 
 	StopAction = &common.Animation{Name: "stop", Frames: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}}
 	WalkAction = &common.Animation{Name: "move", Frames: []int{11, 12, 13, 14, 15}, Loop: true}
 	SkillAction = &common.Animation{Name: "skill", Frames: []int{44, 45, 46, 47, 48, 49, 50, 51, 52, 53}}
 	actions = []*common.Animation{StopAction, WalkAction, SkillAction}
 
-	engo.Input.RegisterButton(jumpButton, engo.KeySpace, engo.KeyX)
-	engo.Input.RegisterButton(actionButton, engo.KeyD, engo.KeyArrowRight)
+	tango.Input.RegisterButton(jumpButton, tango.KeySpace, tango.KeyX)
+	tango.Input.RegisterButton(actionButton, tango.KeyD, tango.KeyArrowRight)
 }
 
-func (scene *DefaultScene) Setup(u engo.Updater) {
+func (scene *DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -52,7 +52,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 
 	spriteSheet := common.NewSpritesheetFromFile("hero.png", 150, 150)
 
-	hero := scene.CreateEntity(engo.Point{0, 0}, spriteSheet)
+	hero := scene.CreateEntity(tango.Point{0, 0}, spriteSheet)
 
 	// Add our hero to the appropriate systems
 	for _, system := range w.Systems() {
@@ -69,7 +69,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 
 func (*DefaultScene) Type() string { return "GameWorld" }
 
-func (*DefaultScene) CreateEntity(point engo.Point, spriteSheet *common.Spritesheet) *Animation {
+func (*DefaultScene) CreateEntity(point tango.Point, spriteSheet *common.Spritesheet) *Animation {
 	entity := &Animation{BasicEntity: ecs.NewBasic()}
 
 	entity.SpaceComponent = common.SpaceComponent{
@@ -79,7 +79,7 @@ func (*DefaultScene) CreateEntity(point engo.Point, spriteSheet *common.Spritesh
 	}
 	entity.RenderComponent = common.RenderComponent{
 		Drawable: spriteSheet.Cell(0),
-		Scale:    engo.Point{3, 3},
+		Scale:    tango.Point{3, 3},
 	}
 	entity.AnimationComponent = common.NewAnimationComponent(spriteSheet.Drawables(), 0.1)
 
@@ -117,19 +117,19 @@ func (c *ControlSystem) Remove(basic ecs.BasicEntity) {
 
 func (c *ControlSystem) Update(dt float32) {
 	for _, e := range c.entities {
-		if engo.Input.Button(actionButton).JustPressed() {
+		if tango.Input.Button(actionButton).JustPressed() {
 			e.AnimationComponent.SelectAnimationByAction(WalkAction)
-		} else if engo.Input.Button(jumpButton).JustPressed() {
+		} else if tango.Input.Button(jumpButton).JustPressed() {
 			e.AnimationComponent.SelectAnimationByAction(SkillAction)
 		}
 	}
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Animation Demo",
 		Width:  1024,
 		Height: 640,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

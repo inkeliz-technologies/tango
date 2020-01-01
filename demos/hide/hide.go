@@ -7,9 +7,9 @@ import (
 	"log"
 	"math/rand"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 type DefaultScene struct{}
@@ -21,13 +21,13 @@ type Rock struct {
 }
 
 func (*DefaultScene) Preload() {
-	err := engo.Files.Load("rock.png")
+	err := tango.Files.Load("rock.png")
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func (*DefaultScene) Setup(u engo.Updater) {
+func (*DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -47,10 +47,10 @@ func (*DefaultScene) Setup(u engo.Updater) {
 	// Initialize the components, set scale to 8x
 	rock.RenderComponent = common.RenderComponent{
 		Drawable: texture,
-		Scale:    engo.Point{8, 8},
+		Scale:    tango.Point{8, 8},
 	}
 	rock.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{0, 0},
+		Position: tango.Point{0, 0},
 		Width:    texture.Width() * rock.RenderComponent.Scale.X,
 		Height:   texture.Height() * rock.RenderComponent.Scale.Y,
 	}
@@ -105,10 +105,10 @@ func (h *HideSystem) Update(dt float32) {
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "Show and Hide Demo",
 		Width:  1024,
 		Height: 640,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

@@ -16,7 +16,7 @@ var t *common.Tile
 if e.SpaceComponent.Position.X >= 0 {
   t = levelData.GetTile(e.SpaceComponent.Center())
 } else {
-  t = levelData.GetTile(engo.Point{
+  t = levelData.GetTile(tango.Point{
     X: e.SpaceComponent.Position.X - float32(levelData.TileWidth),
     Y: e.SpaceComponent.Position.Y + float32(levelData.TileHeight),
   })

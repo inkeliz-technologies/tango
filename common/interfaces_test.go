@@ -3,8 +3,8 @@ package common
 import (
 	"testing"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
 )
 
 type EveryComp struct {
@@ -26,7 +26,7 @@ func (*TestInterfaceScene) Type() string { return "TestInterfaceScene" }
 
 func (*TestInterfaceScene) Preload() {}
 
-func (s *TestInterfaceScene) Setup(u engo.Updater) {
+func (s *TestInterfaceScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	asys := AnimationSystem{}
@@ -122,7 +122,7 @@ func (s *TestInterfaceScene) Setup(u engo.Updater) {
 // I can't test adding things that don't work as the code won't compile
 func TestEveryInterface(t *testing.T) {
 	s := &TestInterfaceScene{}
-	engo.Run(engo.RunOptions{
+	tango.Run(tango.RunOptions{
 		NoRun:        true,
 		HeadlessMode: true,
 	}, s)

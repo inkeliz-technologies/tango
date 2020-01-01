@@ -10,8 +10,8 @@ These things are key in this demo:
 ```go
 func (s *FollowSystem) Update(dt float32) {
     for _, e := range s.entities {
-        e.SpaceComponent.Position.X += engo.Input.Axis(engo.DefaultMouseXAxis).Value()
-        e.SpaceComponent.Position.Y += engo.Input.Axis(engo.DefaultMouseYAxis).Value()
+        e.SpaceComponent.Position.X += tango.Input.Axis(tango.DefaultMouseXAxis).Value()
+        e.SpaceComponent.Position.Y += tango.Input.Axis(tango.DefaultMouseYAxis).Value()
     }
 }
 ```

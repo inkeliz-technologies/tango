@@ -5,8 +5,8 @@ import (
 	"io"
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
 
 	"github.com/hajimehoshi/oto"
 )
@@ -77,13 +77,13 @@ type AudioSystem struct {
 // New is called when the AudioSystem is added to the world.
 func (a *AudioSystem) New(w *ecs.World) {
 	var err error
-	switch engo.CurrentBackEnd {
-	case engo.BackEndMobile:
+	switch tango.CurrentBackEnd {
+	case tango.BackEndMobile:
 		a.bufsize = 12288
 	default:
 		a.bufsize = 8192
 	}
-	if engo.Headless() {
+	if tango.Headless() {
 		otoPlayer = &stepPlayer{
 			stepStart: make(chan []byte),
 			stepDone:  make(chan struct{}, 1),

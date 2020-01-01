@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Tanh returns the hyperbolic tangent of x.
@@ -11,5 +11,5 @@ import (
 //	Tanh(±Inf) = ±1
 //	Tanh(NaN) = NaN
 func Tanh(x float32) float32 {
-	return engomath.Tanh(x)
+	return math.Tanh(x)
 }

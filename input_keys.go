@@ -1,6 +1,6 @@
 //+build js android ios darwin,arm darwin,arm64 headless
 
-package engo
+package tango
 
 const (
 	// KeyGrave represents the '`' keyboard key

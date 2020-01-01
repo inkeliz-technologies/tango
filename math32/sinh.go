@@ -1,7 +1,7 @@
-package math
+package math32
 
 import (
-	engomath "github.com/EngoEngine/math"
+	 "github.com/EngoEngine/math"
 )
 
 // Sinh returns the hyperbolic sine of x.
@@ -11,7 +11,7 @@ import (
 //	Sinh(±Inf) = ±Inf
 //	Sinh(NaN) = NaN
 func Sinh(x float32) float32 {
-	return engomath.Sinh(x)
+	return math.Sinh(x)
 }
 
 // Cosh returns the hyperbolic cosine of x.
@@ -21,5 +21,5 @@ func Sinh(x float32) float32 {
 //	Cosh(±Inf) = +Inf
 //	Cosh(NaN) = NaN
 func Cosh(x float32) float32 {
-	return engomath.Cosh(x)
+	return math.Cosh(x)
 }

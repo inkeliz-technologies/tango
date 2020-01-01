@@ -6,9 +6,9 @@ import (
 	"image/color"
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/common"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/common"
 )
 
 var (
@@ -65,10 +65,10 @@ type Tile struct {
 func (*DefaultScene) Preload() {
 
 	// Load character model
-	engo.Files.Load(model)
+	tango.Files.Load(model)
 
 	// Load TileMap
-	if err := engo.Files.Load("example.tmx"); err != nil {
+	if err := tango.Files.Load("example.tmx"); err != nil {
 		panic(err)
 	}
 
@@ -127,13 +127,13 @@ func (*DefaultScene) Preload() {
 		WalkRightAction,
 	}
 
-	engo.Input.RegisterButton(upButton, engo.KeyW, engo.KeyArrowUp)
-	engo.Input.RegisterButton(leftButton, engo.KeyA, engo.KeyArrowLeft)
-	engo.Input.RegisterButton(rightButton, engo.KeyD, engo.KeyArrowRight)
-	engo.Input.RegisterButton(downButton, engo.KeyS, engo.KeyArrowDown)
+	tango.Input.RegisterButton(upButton, tango.KeyW, tango.KeyArrowUp)
+	tango.Input.RegisterButton(leftButton, tango.KeyA, tango.KeyArrowLeft)
+	tango.Input.RegisterButton(rightButton, tango.KeyD, tango.KeyArrowRight)
+	tango.Input.RegisterButton(downButton, tango.KeyS, tango.KeyArrowDown)
 }
 
-func (scene *DefaultScene) Setup(u engo.Updater) {
+func (scene *DefaultScene) Setup(u tango.Updater) {
 	w, _ := u.(*ecs.World)
 
 	common.SetBackground(color.White)
@@ -144,7 +144,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 	w.AddSystem(&ControlSystem{})
 
 	// Setup TileMap
-	resource, err := engo.Files.Resource("example.tmx")
+	resource, err := tango.Files.Resource("example.tmx")
 	if err != nil {
 		panic(err)
 	}
@@ -159,7 +159,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 	spriteSheet := common.NewSpritesheetFromFile(model, width, height)
 
 	hero := scene.CreateHero(
-		engo.Point{engo.GameWidth() / 2, engo.GameHeight() / 2},
+		tango.Point{tango.GameWidth() / 2, tango.GameHeight() / 2},
 		spriteSheet,
 	)
 
@@ -214,7 +214,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 				tile := &Tile{BasicEntity: ecs.NewBasic()}
 				tile.RenderComponent = common.RenderComponent{
 					Drawable: tileElement,
-					Scale:    engo.Point{1, 1},
+					Scale:    tango.Point{1, 1},
 				}
 				tile.SpaceComponent = common.SpaceComponent{
 					Position: tileElement.Point,
@@ -242,7 +242,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 				tile := &Tile{BasicEntity: ecs.NewBasic()}
 				tile.RenderComponent = common.RenderComponent{
 					Drawable: imageElement,
-					Scale:    engo.Point{1, 1},
+					Scale:    tango.Point{1, 1},
 				}
 				tile.SpaceComponent = common.SpaceComponent{
 					Position: imageElement.Point,
@@ -280,16 +280,16 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 	}
 
 	// Setup character and movement
-	engo.Input.RegisterAxis(
+	tango.Input.RegisterAxis(
 		"vertical",
-		engo.AxisKeyPair{engo.KeyArrowUp, engo.KeyArrowDown},
-		engo.AxisKeyPair{engo.KeyW, engo.KeyS},
+		tango.AxisKeyPair{tango.KeyArrowUp, tango.KeyArrowDown},
+		tango.AxisKeyPair{tango.KeyW, tango.KeyS},
 	)
 
-	engo.Input.RegisterAxis(
+	tango.Input.RegisterAxis(
 		"horizontal",
-		engo.AxisKeyPair{engo.KeyArrowLeft, engo.KeyArrowRight},
-		engo.AxisKeyPair{engo.KeyA, engo.KeyD},
+		tango.AxisKeyPair{tango.KeyArrowLeft, tango.KeyArrowRight},
+		tango.AxisKeyPair{tango.KeyA, tango.KeyD},
 	)
 
 	// Add EntityScroller System
@@ -301,7 +301,7 @@ func (scene *DefaultScene) Setup(u engo.Updater) {
 
 func (*DefaultScene) Type() string { return "DefaultScene" }
 
-func (*DefaultScene) CreateHero(point engo.Point, spriteSheet *common.Spritesheet) *Hero {
+func (*DefaultScene) CreateHero(point tango.Point, spriteSheet *common.Spritesheet) *Hero {
 	hero := &Hero{BasicEntity: ecs.NewBasic()}
 
 	hero.SpaceComponent = common.SpaceComponent{
@@ -311,7 +311,7 @@ func (*DefaultScene) CreateHero(point engo.Point, spriteSheet *common.Spriteshee
 	}
 	hero.RenderComponent = common.RenderComponent{
 		Drawable: spriteSheet.Cell(0),
-		Scale:    engo.Point{1, 1},
+		Scale:    tango.Point{1, 1},
 	}
 
 	hero.SpeedComponent = SpeedComponent{}
@@ -325,7 +325,7 @@ func (*DefaultScene) CreateHero(point engo.Point, spriteSheet *common.Spriteshee
 
 type SpeedMessage struct {
 	*ecs.BasicEntity
-	engo.Point
+	tango.Point
 }
 
 func (SpeedMessage) Type() string {
@@ -333,7 +333,7 @@ func (SpeedMessage) Type() string {
 }
 
 type SpeedComponent struct {
-	engo.Point
+	tango.Point
 }
 
 type speedEntity struct {
@@ -347,7 +347,7 @@ type SpeedSystem struct {
 }
 
 func (s *SpeedSystem) New(*ecs.World) {
-	engo.Mailbox.Listen(SPEED_MESSAGE, func(message engo.Message) {
+	tango.Mailbox.Listen(SPEED_MESSAGE, func(message tango.Message) {
 		speed, isSpeed := message.(SpeedMessage)
 		if isSpeed {
 			log.Printf("%#v\n", speed.Point)
@@ -380,7 +380,7 @@ func (s *SpeedSystem) Remove(basic ecs.BasicEntity) {
 func (s *SpeedSystem) Update(dt float32) {
 
 	for _, e := range s.entities {
-		speed := engo.GameWidth() * dt
+		speed := tango.GameWidth() * dt
 		e.SpaceComponent.Position.X = e.SpaceComponent.Position.X + speed*e.SpeedComponent.Point.X
 		e.SpaceComponent.Position.Y = e.SpaceComponent.Position.Y + speed*e.SpeedComponent.Point.Y
 
@@ -431,102 +431,102 @@ func (c *ControlSystem) Remove(basic ecs.BasicEntity) {
 }
 
 func setAnimation(e controlEntity) {
-	if engo.Input.Button(upButton).JustPressed() {
+	if tango.Input.Button(upButton).JustPressed() {
 		e.AnimationComponent.SelectAnimationByAction(WalkUpAction)
-	} else if engo.Input.Button(downButton).JustPressed() {
+	} else if tango.Input.Button(downButton).JustPressed() {
 		e.AnimationComponent.SelectAnimationByAction(WalkDownAction)
-	} else if engo.Input.Button(leftButton).JustPressed() {
+	} else if tango.Input.Button(leftButton).JustPressed() {
 		e.AnimationComponent.SelectAnimationByAction(WalkLeftAction)
-	} else if engo.Input.Button(rightButton).JustPressed() {
+	} else if tango.Input.Button(rightButton).JustPressed() {
 		e.AnimationComponent.SelectAnimationByAction(WalkRightAction)
 	}
 
-	if engo.Input.Button(upButton).JustReleased() {
+	if tango.Input.Button(upButton).JustReleased() {
 		e.AnimationComponent.SelectAnimationByAction(StopUpAction)
-		if engo.Input.Button(leftButton).Down() {
+		if tango.Input.Button(leftButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkLeftAction)
-		} else if engo.Input.Button(rightButton).Down() {
+		} else if tango.Input.Button(rightButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkRightAction)
-		} else if engo.Input.Button(upButton).Down() {
+		} else if tango.Input.Button(upButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkUpAction)
-		} else if engo.Input.Button(downButton).Down() {
+		} else if tango.Input.Button(downButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkDownAction)
 		}
-	} else if engo.Input.Button(downButton).JustReleased() {
+	} else if tango.Input.Button(downButton).JustReleased() {
 		e.AnimationComponent.SelectAnimationByAction(StopDownAction)
-		if engo.Input.Button(leftButton).Down() {
+		if tango.Input.Button(leftButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkLeftAction)
-		} else if engo.Input.Button(rightButton).Down() {
+		} else if tango.Input.Button(rightButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkRightAction)
-		} else if engo.Input.Button(upButton).Down() {
+		} else if tango.Input.Button(upButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkUpAction)
-		} else if engo.Input.Button(downButton).Down() {
+		} else if tango.Input.Button(downButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkDownAction)
 		}
-	} else if engo.Input.Button(leftButton).JustReleased() {
+	} else if tango.Input.Button(leftButton).JustReleased() {
 		e.AnimationComponent.SelectAnimationByAction(StopLeftAction)
-		if engo.Input.Button(leftButton).Down() {
+		if tango.Input.Button(leftButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkLeftAction)
-		} else if engo.Input.Button(rightButton).Down() {
+		} else if tango.Input.Button(rightButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkRightAction)
-		} else if engo.Input.Button(upButton).Down() {
+		} else if tango.Input.Button(upButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkUpAction)
-		} else if engo.Input.Button(downButton).Down() {
+		} else if tango.Input.Button(downButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkDownAction)
 		}
-	} else if engo.Input.Button(rightButton).JustReleased() {
+	} else if tango.Input.Button(rightButton).JustReleased() {
 		e.AnimationComponent.SelectAnimationByAction(StopRightAction)
-		if engo.Input.Button(leftButton).Down() {
+		if tango.Input.Button(leftButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkLeftAction)
-		} else if engo.Input.Button(rightButton).Down() {
+		} else if tango.Input.Button(rightButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkRightAction)
-		} else if engo.Input.Button(upButton).Down() {
+		} else if tango.Input.Button(upButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkUpAction)
-		} else if engo.Input.Button(downButton).Down() {
+		} else if tango.Input.Button(downButton).Down() {
 			e.AnimationComponent.SelectAnimationByAction(WalkDownAction)
 		}
 	}
 }
 
-func getSpeed(e controlEntity) (p engo.Point, changed bool) {
-	p.X = engo.Input.Axis(e.ControlComponent.SchemeHoriz).Value()
-	p.Y = engo.Input.Axis(e.ControlComponent.SchemeVert).Value()
+func getSpeed(e controlEntity) (p tango.Point, changed bool) {
+	p.X = tango.Input.Axis(e.ControlComponent.SchemeHoriz).Value()
+	p.Y = tango.Input.Axis(e.ControlComponent.SchemeVert).Value()
 	origX, origY := p.X, p.Y
 
-	if engo.Input.Button(upButton).JustPressed() {
+	if tango.Input.Button(upButton).JustPressed() {
 		p.Y = -1
-	} else if engo.Input.Button(downButton).JustPressed() {
+	} else if tango.Input.Button(downButton).JustPressed() {
 		p.Y = 1
 	}
-	if engo.Input.Button(leftButton).JustPressed() {
+	if tango.Input.Button(leftButton).JustPressed() {
 		p.X = -1
-	} else if engo.Input.Button(rightButton).JustPressed() {
+	} else if tango.Input.Button(rightButton).JustPressed() {
 		p.X = 1
 	}
 
-	if engo.Input.Button(upButton).JustReleased() || engo.Input.Button(downButton).JustReleased() {
+	if tango.Input.Button(upButton).JustReleased() || tango.Input.Button(downButton).JustReleased() {
 		p.Y = 0
 		changed = true
-		if engo.Input.Button(upButton).Down() {
+		if tango.Input.Button(upButton).Down() {
 			p.Y = -1
-		} else if engo.Input.Button(downButton).Down() {
+		} else if tango.Input.Button(downButton).Down() {
 			p.Y = 1
-		} else if engo.Input.Button(leftButton).Down() {
+		} else if tango.Input.Button(leftButton).Down() {
 			p.X = -1
-		} else if engo.Input.Button(rightButton).Down() {
+		} else if tango.Input.Button(rightButton).Down() {
 			p.X = 1
 		}
 	}
-	if engo.Input.Button(leftButton).JustReleased() || engo.Input.Button(rightButton).JustReleased() {
+	if tango.Input.Button(leftButton).JustReleased() || tango.Input.Button(rightButton).JustReleased() {
 		p.X = 0
 		changed = true
-		if engo.Input.Button(leftButton).Down() {
+		if tango.Input.Button(leftButton).Down() {
 			p.X = -1
-		} else if engo.Input.Button(rightButton).Down() {
+		} else if tango.Input.Button(rightButton).Down() {
 			p.X = 1
-		} else if engo.Input.Button(upButton).Down() {
+		} else if tango.Input.Button(upButton).Down() {
 			p.Y = -1
-		} else if engo.Input.Button(downButton).Down() {
+		} else if tango.Input.Button(downButton).Down() {
 			p.Y = 1
 		}
 	}
@@ -542,16 +542,16 @@ func (c *ControlSystem) Update(dt float32) {
 			speed := dt * SPEED_SCALE
 			vector, _ = vector.Normalize()
 			vector.MultiplyScalar(speed)
-			engo.Mailbox.Dispatch(SpeedMessage{e.BasicEntity, vector})
+			tango.Mailbox.Dispatch(SpeedMessage{e.BasicEntity, vector})
 		}
 	}
 }
 
 func main() {
-	opts := engo.RunOptions{
+	opts := tango.RunOptions{
 		Title:  "My Little Adventure",
 		Width:  500,
 		Height: 500,
 	}
-	engo.Run(opts, &DefaultScene{})
+	tango.Run(opts, &DefaultScene{})
 }

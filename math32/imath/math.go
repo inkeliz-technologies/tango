@@ -1,7 +1,7 @@
 package imath
 
 import (
-	engoimath "github.com/EngoEngine/math/imath"
+	"github.com/EngoEngine/math/imath"
 )
 
 // Integer limit values.
@@ -22,86 +22,86 @@ const (
 
 // Abs returns the absolute value of x.
 func Abs(x int) int {
-	return engoimath.Abs(x)
+	return imath.Abs(x)
 }
 
 // Cbrt returns the cube root of x.
 func Cbrt(x int) int {
-	return engoimath.Cbrt(x)
+	return imath.Cbrt(x)
 }
 
 // Copysign returns a value with the magnitude of x and the sign of y.
 func Copysign(x, y int) int {
-	return engoimath.Copysign(x, y)
+	return imath.Copysign(x, y)
 }
 
 // Dim returns the maximum of x-y or 0.
 func Dim(x, y int) int {
-	return engoimath.Dim(x, y)
+	return imath.Dim(x, y)
 }
 
 // Exp2 returns 2**x, the base-2 exponential of x.
 func Exp2(x int) int {
-	return engoimath.Exp2(x)
+	return imath.Exp2(x)
 }
 
 // Intbits return the binary representation of i.
 func Intbits(i int) uint {
-	return engoimath.Intbits(i)
+	return imath.Intbits(i)
 }
 
 // Intfrombits returns the int represented from b.
 func Intfrombits(b uint) int {
-	return engoimath.Intfrombits(b)
+	return imath.Intfrombits(b)
 }
 
 // Hypot returns Sqrt(p*p + q*q), taking care to avoid unnecessary overflow and
 // underflow.
 func Hypot(p, q int) int {
-	return engoimath.Hypot(p, q)
+	return imath.Hypot(p, q)
 }
 
 // Log returns the natural logarithm of x.
 func Log(x int) int {
-	return engoimath.Log(x)
+	return imath.Log(x)
 }
 
 // Max returns the larger of x or y.
 func Max(x, y int) int {
-	return engoimath.Max(x, y)
+	return imath.Max(x, y)
 }
 
 // Min returns the smaller of x or y.
 func Min(x, y int) int {
-	return engoimath.Min(x, y)
+	return imath.Min(x, y)
 }
 
 // Mod returns the x%y.
 func Mod(x, y int) int {
-	return engoimath.Mod(x, y)
+	return imath.Mod(x, y)
 }
 
 // Nextafter returns the next representable int value after x towards y.
 func Nextafter(x, y int) (r int) {
-	return engoimath.Nextafter(x, y)
+	return imath.Nextafter(x, y)
 }
 
 // Pow returns x**y, the base-x exponential of y.
 func Pow(x, y int) int {
-	return engoimath.Pow(x, y)
+	return imath.Pow(x, y)
 }
 
 // Pow10 returns 10**e, the base-10 exponential of e.
 func Pow10(e int) int {
-	return engoimath.Pow10(e)
+	return imath.Pow10(e)
 }
 
 // Signbit returns true if x is negative or negative zero.
 func Signbit(x int) bool {
-	return engoimath.Signbit(x)
+	return imath.Signbit(x)
 }
 
 // Sqrt returns the square root of x.
 func Sqrt(x int) int {
-	return engoimath.Sqrt(x)
+	return imath.Sqrt(x)
 }

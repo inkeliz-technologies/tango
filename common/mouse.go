@@ -3,9 +3,9 @@ package common
 import (
 	"log"
 
-	"github.com/EngoEngine/ecs"
-	"github.com/EngoEngine/engo"
-	"github.com/EngoEngine/engo/math"
+	"github.com/inkeliz-technologies/ecs"
+	"github.com/inkeliz-technologies/tango"
+	"github.com/inkeliz-technologies/tango/math32"
 )
 
 // Cursor is a reference to a GLFW-cursor - to be used with the `SetCursor` method.
@@ -42,11 +42,11 @@ type Mouse struct {
 	// ScrollY is the current scrolled position on the y component
 	ScrollY float32
 	// Action is the currently active Action
-	Action engo.Action
+	Action tango.Action
 	// Button is which button is being pressed on the mouse
-	Button engo.MouseButton
+	Button tango.MouseButton
 	// Modifier is whether any modifier mouse buttons are being pressed
-	Modifer engo.Modifier
+	Modifer tango.Modifier
 }
 
 // MouseComponent is the location for the MouseSystem to store its results;
@@ -97,7 +97,7 @@ type MouseComponent struct {
 	Track bool
 	// Modifier is used to store the eventual modifiers that were pressed during
 	// the same time the different click events occurred
-	Modifier engo.Modifier
+	Modifier tango.Modifier
 
 	// startedDragging is used internally to see if *this* is the object that is being dragged
 	startedDragging bool
@@ -177,18 +177,18 @@ func (m *MouseSystem) Remove(basic ecs.BasicEntity) {
 // Update updates all the entities in the MouseSystem.
 func (m *MouseSystem) Update(dt float32) {
 	// Translate Mouse.X and Mouse.Y into "game coordinates"
-	switch engo.CurrentBackEnd {
-	case engo.BackEndGLFW, engo.BackEndSDL, engo.BackEndVulkan:
-		m.mouseX = ((engo.Input.Mouse.X * m.camera.Z() * engo.GameWidth() / engo.WindowWidth()) + (m.camera.X()-(engo.GameWidth()/2)*m.camera.Z())/engo.GetGlobalScale().X)
-		m.mouseY = ((engo.Input.Mouse.Y * m.camera.Z() * engo.GameHeight() / engo.WindowHeight()) + (m.camera.Y()-(engo.GameHeight()/2)*m.camera.Z())/engo.GetGlobalScale().Y)
-	case engo.BackEndMobile, engo.BackEndWeb:
-		m.mouseX = engo.Input.Mouse.X*m.camera.Z() + (m.camera.X()-(engo.GameWidth()/2)*m.camera.Z()+(engo.ResizeXOffset/2))/engo.GetGlobalScale().X
-		m.mouseY = engo.Input.Mouse.Y*m.camera.Z() + (m.camera.Y()-(engo.GameHeight()/2)*m.camera.Z()+(engo.ResizeYOffset/2))/engo.GetGlobalScale().Y
+	switch tango.CurrentBackEnd {
+	case tango.BackEndGLFW, tango.BackEndSDL, tango.BackEndVulkan:
+		m.mouseX = ((tango.Input.Mouse.X * m.camera.Z() * tango.GameWidth() / tango.WindowWidth()) + (m.camera.X()-(tango.GameWidth()/2)*m.camera.Z())/tango.GetGlobalScale().X)
+		m.mouseY = ((tango.Input.Mouse.Y * m.camera.Z() * tango.GameHeight() / tango.WindowHeight()) + (m.camera.Y()-(tango.GameHeight()/2)*m.camera.Z())/tango.GetGlobalScale().Y)
+	case tango.BackEndMobile, tango.BackEndWeb:
+		m.mouseX = tango.Input.Mouse.X*m.camera.Z() + (m.camera.X()-(tango.GameWidth()/2)*m.camera.Z()+(tango.ResizeXOffset/2))/tango.GetGlobalScale().X
+		m.mouseY = tango.Input.Mouse.Y*m.camera.Z() + (m.camera.Y()-(tango.GameHeight()/2)*m.camera.Z()+(tango.ResizeYOffset/2))/tango.GetGlobalScale().Y
 	}
 
 	// Rotate if needed
 	if m.camera.angle != 0 {
-		sin, cos := math.Sincos(m.camera.angle * math.Pi / 180)
+		sin, cos := math32.Sincos(m.camera.angle * math32.Pi / 180)
 		m.mouseX, m.mouseY = m.mouseX*cos+m.mouseY*sin, m.mouseY*cos-m.mouseX*sin
 	}
 
@@ -220,8 +220,8 @@ func (m *MouseSystem) Update(dt float32) {
 		if e.RenderComponent != nil {
 			// Hardcoded special case for the HUD | TODO: make generic instead of hardcoding
 			if e.RenderComponent.shader == HUDShader || e.RenderComponent.shader == LegacyHUDShader {
-				mx = engo.Input.Mouse.X
-				my = engo.Input.Mouse.Y
+				mx = tango.Input.Mouse.X
+				my = tango.Input.Mouse.Y
 			}
 
 			if e.RenderComponent.Hidden {
@@ -233,7 +233,7 @@ func (m *MouseSystem) Update(dt float32) {
 		// Check if the X-value is within range
 		// and if the Y-value is within range
 		if e.MouseComponent.Track || e.MouseComponent.startedDragging ||
-			e.SpaceComponent.Contains(engo.Point{X: mx, Y: my}) {
+			e.SpaceComponent.Contains(tango.Point{X: mx, Y: my}) {
 
 			e.MouseComponent.Enter = !e.MouseComponent.Hovered
 			e.MouseComponent.Hovered = true
@@ -245,26 +245,26 @@ func (m *MouseSystem) Update(dt float32) {
 				e.MouseComponent.MouseY = my
 			}
 
-			switch engo.Input.Mouse.Action {
-			case engo.Press:
-				switch engo.Input.Mouse.Button {
-				case engo.MouseButtonLeft:
+			switch tango.Input.Mouse.Action {
+			case tango.Press:
+				switch tango.Input.Mouse.Button {
+				case tango.MouseButtonLeft:
 					e.MouseComponent.Clicked = true
 					e.MouseComponent.startedDragging = true
-				case engo.MouseButtonRight:
+				case tango.MouseButtonRight:
 					e.MouseComponent.RightClicked = true
 					e.MouseComponent.rightStartedDragging = true
 				}
 
 				m.mouseDown = true
-			case engo.Release:
-				switch engo.Input.Mouse.Button {
-				case engo.MouseButtonLeft:
+			case tango.Release:
+				switch tango.Input.Mouse.Button {
+				case tango.MouseButtonLeft:
 					e.MouseComponent.Released = true
-				case engo.MouseButtonRight:
+				case tango.MouseButtonRight:
 					e.MouseComponent.RightReleased = true
 				}
-			case engo.Move:
+			case tango.Move:
 				if m.mouseDown && e.MouseComponent.startedDragging {
 					e.MouseComponent.Dragged = true
 				}
@@ -280,7 +280,7 @@ func (m *MouseSystem) Update(dt float32) {
 			e.MouseComponent.Hovered = false
 		}
 
-		if engo.Input.Mouse.Action == engo.Release {
+		if tango.Input.Mouse.Action == tango.Release {
 			// dragging stops as soon as one of the currently pressed buttons
 			// is released
 			e.MouseComponent.Dragged = false
@@ -294,6 +294,6 @@ func (m *MouseSystem) Update(dt float32) {
 
 		// propagate the modifiers to the mouse component so that game
 		// implementers can take different decisions based on those
-		e.MouseComponent.Modifier = engo.Input.Mouse.Modifer
+		e.MouseComponent.Modifier = tango.Input.Mouse.Modifer
 	}
 }

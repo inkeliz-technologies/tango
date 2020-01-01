@@ -1,4 +1,4 @@
-package engo
+package tango
 
 // Action corresponds to a control action such as move, press, release
 type Action int

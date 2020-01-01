@@ -1,9 +1,9 @@
-package engo
+package tango
 
 import (
 	"testing"
 
-	"github.com/EngoEngine/engo/math"
+	"github.com/inkeliz-technologies/tango/math32"
 )
 
 func TestFloatEqual(t *testing.T) {
@@ -22,13 +22,13 @@ func TestFloatEqual(t *testing.T) {
 			exp: false,
 		},
 		{
-			a:   math.NaN(),
+			a:   math32.NaN(),
 			b:   0,
 			exp: false,
 		},
 		{
-			a:   math.NaN(),
-			b:   math.NaN(),
+			a:   math32.NaN(),
+			b:   math32.NaN(),
 			exp: false,
 		},
 	}
@@ -558,7 +558,7 @@ func TestLineNormal(t *testing.T) {
 				P1: Point{X: 0, Y: 0},
 				P2: Point{X: 8, Y: 8},
 			},
-			exp: Point{X: math.Sqrt(2) / 2, Y: -1 * math.Sqrt(2) / 2},
+			exp: Point{X: math32.Sqrt(2) / 2, Y: -1 * math32.Sqrt(2) / 2},
 		},
 	}
 	for _, d := range data {
