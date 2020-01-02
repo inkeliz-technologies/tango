@@ -330,7 +330,12 @@ func (c *KeyboardScroller) Update(dt float32) {
 		X: tango.Input.Axis(c.horizontalAxis).Value(),
 		Y: tango.Input.Axis(c.verticalAxis).Value(),
 	}
+
 	n, _ := m.Normalize()
+	if n.X == 0 && n.Y == 0 {
+		return
+	}
+
 	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: n.X * c.ScrollSpeed * dt, Incremental: true})
 	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: n.Y * c.ScrollSpeed * dt, Incremental: true})
 }
