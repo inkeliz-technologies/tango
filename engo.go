@@ -78,6 +78,9 @@ type RunOptions struct {
 	// NoRun indicates the Open function should return immediately, without looping
 	NoRun bool
 
+	// VirtualMouse uses a custom cursor and traps the cursor inside game-window
+	VirtualMouse bool
+
 	// Title is the Window title
 	Title string
 
@@ -222,7 +225,7 @@ func Run(o RunOptions, defaultScene Scene) {
 			SetScene(defaultScene, true)
 		}
 	} else {
-		opts.CreateWindow()
+		CreateWindow(&opts)
 		defer DestroyWindow()
 
 		if !opts.NoRun {

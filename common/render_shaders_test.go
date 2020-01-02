@@ -24,7 +24,7 @@ func TestShadersInitialization(t *testing.T) {
 		NoRun:        true,
 		HeadlessMode: true,
 	}, &testScene{})
-	tango.CreateWindow("", 100, 100, false, 1)
+	tango.CreateWindow(&tango.RunOptions{Title: "Title", Width: 100, Height: 100, Fullscreen: true})
 	defer tango.DestroyWindow()
 
 	w := &ecs.World{}
@@ -40,7 +40,7 @@ func TestShaderCompilation(t *testing.T) {
 		NoRun:        true,
 		HeadlessMode: true,
 	}, &testScene{})
-	tango.CreateWindow("", 100, 100, false, 1)
+	tango.CreateWindow(&tango.RunOptions{Title: "Title", Width: 100, Height: 100, Fullscreen: true})
 	defer tango.DestroyWindow()
 
 	var err error

@@ -37,7 +37,7 @@ func init() {
 }
 
 // CreateWindow sets up the GLFW window and prepares the OpenGL surface for rendering
-func (opts *RunOptions) CreateWindow() {
+func CreateWindow(opts *RunOptions) {
 	CurrentBackEnd = BackEndGLFW
 	err := glfw.Init()
 	if err != nil {
@@ -111,6 +111,7 @@ func (opts *RunOptions) CreateWindow() {
 	}
 
 	SetVSync(opts.VSync)
+	SetVirtualMouse(opts.VirtualMouse)
 
 	Gl = gl.NewContext()
 
@@ -143,6 +144,7 @@ func (opts *RunOptions) CreateWindow() {
 
 	Window.SetCursorPosCallback(func(Window *glfw.Window, x, y float64) {
 		Input.Mouse.X, Input.Mouse.Y = float32(x)/opts.GlobalScale.X, float32(y)/opts.GlobalScale.Y
+
 		if Input.Mouse.Action != Release && Input.Mouse.Action != Press {
 			Input.Mouse.Action = Move
 		}
@@ -347,6 +349,15 @@ func SetVSync(enabled bool) {
 		glfw.SwapInterval(1)
 	} else {
 		glfw.SwapInterval(0)
+	}
+}
+
+func SetVirtualMouse(enabled bool) {
+	opts.VirtualMouse = enabled
+	if opts.VirtualMouse {
+		glfw.GetCurrentContext().SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+	} else {
+		glfw.GetCurrentContext().SetInputMode(glfw.CursorMode, glfw.CursorNormal)
 	}
 }
 
