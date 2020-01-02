@@ -112,6 +112,7 @@ func CreateWindow(opts *RunOptions) {
 
 	SetVSync(opts.VSync)
 	SetVirtualMouse(opts.VirtualMouse)
+	SetRawMouseMotion(opts.RawMouse)
 
 	Gl = gl.NewContext()
 
@@ -358,6 +359,10 @@ func SetVSync(enabled bool) {
 	}
 }
 
+// SetVirtualMouse is similar to SetCursorVisibility(false), but locks the cursor at the center of the screen. The
+// position of the cursor (handled by SetCursorPosCallback) is updated using a virtual invisible cursor.
+// You might need to use the common.CursorSystem to see the cursor or create your own system.
+// If true the VirtualMouse will be used
 func SetVirtualMouse(enabled bool) {
 	opts.VirtualMouse = enabled
 	if opts.VirtualMouse {
@@ -367,8 +372,20 @@ func SetVirtualMouse(enabled bool) {
 	}
 }
 
-//SetCursorVisibility sets the visibility of the cursor.
-//If true the cursor is visible, if false the cursor is not.
+// SetRawMouseMotion ignores any scale or acceleration causes by the OS. It is ONLY supported while using VirtualMouse.
+// You might need to adjust the mouse speed/sensitivity by you own, creating your own system.
+// If true the SetRawMouseMotion will be used if supported.
+func SetRawMouseMotion(enabled bool) {
+	opts.VirtualMouse = enabled && glfw.RawMouseMotionSupported()
+	if opts.VirtualMouse {
+		glfw.GetCurrentContext().SetInputMode(glfw.RawMouseMotion, glfw.True)
+	} else {
+		glfw.GetCurrentContext().SetInputMode(glfw.RawMouseMotion, glfw.False)
+	}
+}
+
+// SetCursorVisibility sets the visibility of the cursor.
+// If true the cursor is visible, if false the cursor is not.
 func SetCursorVisibility(visible bool) {
 	if visible {
 		glfw.GetCurrentContext().SetInputMode(glfw.CursorMode, glfw.CursorNormal)

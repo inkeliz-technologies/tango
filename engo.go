@@ -81,6 +81,9 @@ type RunOptions struct {
 	// VirtualMouse uses a custom cursor and traps the cursor inside game-window
 	VirtualMouse bool
 
+	// RawMouse indicates the usage of RawMouseMotion, it's not affected by the scaling and acceleration applied to the motion of the desktop cursor.
+	RawMouse bool
+
 	// Title is the Window title
 	Title string
 
