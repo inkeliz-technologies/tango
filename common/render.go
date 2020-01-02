@@ -82,6 +82,9 @@ type RenderComponent struct {
 	// screen. Higher z-indices are drawn on top of lower ones. Beware that you must use `SetZIndex` function to change
 	// the Z-Index.
 	StartZIndex float32
+	// StartShader defines the initial Shader. Beware that you must use `SetShader` function to change
+	// the Shader.
+	StartShader Shader
 
 	magFilter, minFilter ZoomFilter
 
@@ -263,6 +266,10 @@ func (rs *RenderSystem) Add(basic *ecs.BasicEntity, render *RenderComponent, spa
 	}
 
 	rs.ids[basic.ID()] = struct{}{}
+
+	if render.shader == nil {
+		render.shader = render.StartShader
+	}
 
 	render.ensureShader()
 
