@@ -1,31 +1,33 @@
 package common
 
 import (
-	"log"
-	"sync"
-	"time"
-
 	"github.com/inkeliz-technologies/ecs"
 	"github.com/inkeliz-technologies/tango"
 	"github.com/inkeliz-technologies/tango/math32"
+	"log"
+	"sync"
+	"time"
 )
 
 const (
 	// MouseRotatorPriority is the priority for the MouseRotatorSystem.
 	// Priorities determine the order in which the system is updated.
-	MouseRotatorPriority = 100
+	MouseRotatorPriority = 100 + (iota * 10)
 	// MouseZoomerPriority is the priority for he MouseZoomerSystem.
 	// Priorities determine the order in which the system is updated.
-	MouseZoomerPriority = 110
+	MouseZoomerPriority
 	// EdgeScrollerPriority is the priority for the EdgeScrollerSystem.
 	// Priorities determine the order in which the system is updated.
-	EdgeScrollerPriority = 120
+	EdgeScrollerPriority
 	// KeyboardScrollerPriority is the priority for the KeyboardScrollerSystem.
 	// Priorities determine the order in which the system is updated.
-	KeyboardScrollerPriority = 130
+	KeyboardScrollerPriority
+	// KeyboardRotatorPriority is the priority for the KeyboardRotatorSystem.
+	// Priorities determine the order in which the system is updated.
+	KeyboardRotatorPriority
 	// EntityScrollerPriority is the priority for the EntityScrollerSystem.
 	// Priorities determine the order in which the system is updated.
-	EntityScrollerPriority = 140
+	EntityScrollerPriority
 )
 
 var (
@@ -314,7 +316,7 @@ type KeyboardScroller struct {
 	keysMu                       sync.RWMutex
 }
 
-// Priority implememts the ecs.Prioritizer interface.
+// Priority implements the ecs.Prioritizer interface.
 func (*KeyboardScroller) Priority() int { return KeyboardScrollerPriority }
 
 // Remove does nothing because the KeyboardScroller system has no entities. It implements the
@@ -360,6 +362,82 @@ func NewKeyboardScroller(scrollSpeed float32, hori, vert string) *KeyboardScroll
 	kbs.BindKeyboard(hori, vert)
 
 	return kbs
+}
+
+// KeyboardScroller is a System that allows for scrolling when certain keys are pressed.
+type KeyboardRotator struct {
+	RotationSpeed                  float32
+	ClockwiseKey, AnticlockwiseKey string
+	// DisableHolding prevent holding the key, useful for a stepped rotation like The Sims 1 (90º each press).
+	HoldingDisabled bool
+
+	// RotationAcceleration prevents roughly change of the roration while HoldingDisabled is TRUE
+	// It doesn't have effect if HoldingDisabled is FALSE (default)
+	// It's not safe to change after defined!
+	RotationAcceleration []float32
+
+	remaining float32
+	rotation  float32
+}
+
+// Priority implements the ecs.Prioritizer interface.
+func (*KeyboardRotator) Priority() int { return KeyboardRotatorPriority }
+
+func (c *KeyboardRotator) New(_ *ecs.World) {
+	if c.RotationAcceleration == nil {
+		c.RotationAcceleration = []float32{c.RotationSpeed}
+	}
+}
+
+// Remove does nothing because the KeyboardRotator system has no entities. It implements the
+// ecs.System interface.
+func (*KeyboardRotator) Remove(ecs.BasicEntity) {}
+
+// Update updates the camera based on keyboard input.
+func (c *KeyboardRotator) Update(dt float32) {
+	if (c.remaining * c.rotation) > 0 {
+		l := float32(len(c.RotationAcceleration))
+
+		walk := c.RotationAcceleration[int(math32.Clamp(math32.Ceil(math32.Abs(c.remaining)/(c.RotationSpeed/l))-1, 0, l-1))]
+		c.remaining = c.remaining - (walk * c.rotation)
+
+		tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: walk, Incremental: true})
+		return
+	}
+
+	rotation := float32(0)
+	if cb := tango.Input.Button(c.ClockwiseKey); cb.JustPressed() || (cb.Down() && !c.HoldingDisabled) {
+		rotation += 1
+	}
+
+	if ab := tango.Input.Button(c.AnticlockwiseKey); ab.JustPressed() || (ab.Down() && !c.HoldingDisabled) {
+		rotation -= 1
+	}
+
+	if rotation != 0 {
+		if c.HoldingDisabled {
+			c.remaining = rotation * c.RotationSpeed
+			c.rotation = rotation
+		} else {
+			tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: rotation * c.RotationSpeed, Incremental: true})
+		}
+	}
+}
+
+// BindKeyboard sets the vertical and horizontal axes used by the KeyboardScroller.
+func (c *KeyboardRotator) BindKeyboard(clockwiseKey, anticlockwiseKey string) {
+	c.ClockwiseKey = clockwiseKey
+	c.AnticlockwiseKey = anticlockwiseKey
+}
+
+// KeyboardRotator creates a new KeyboardRotator system
+func NewKeyboardRotator(rotationSpeed float32, clockwiseKey, anticlockwiseKey string, disableHolding bool) *KeyboardRotator {
+	return &KeyboardRotator{
+		RotationSpeed:    rotationSpeed,
+		ClockwiseKey:     clockwiseKey,
+		AnticlockwiseKey: anticlockwiseKey,
+		HoldingDisabled:  disableHolding,
+	}
 }
 
 // EntityScroller scrolls the camera to the position of a entity using its space component.
