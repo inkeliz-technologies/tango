@@ -290,6 +290,12 @@ func CursorPos() (x, y float32) {
 	return float32(w), float32(h)
 }
 
+// CursorPointPos returns the current cursor position
+func CursorPointPos() Point {
+	w, h := Window.GetCursorPos()
+	return Point{X: float32(w), Y: float32(h)}
+}
+
 // WindowSize gets the current window size
 func WindowSize() (w, h int) {
 	return Window.GetSize()
@@ -369,6 +375,11 @@ func SetCursorVisibility(visible bool) {
 	} else {
 		glfw.GetCurrentContext().SetInputMode(glfw.CursorMode, glfw.CursorHidden)
 	}
+}
+
+// SetCursorPosition sets the cursor at specific position, relative to GameHeight/GameWidth
+func SetCursorPosition(x, y float32) {
+	Window.SetCursorPos(float64(x), float64(y))
 }
 
 // openFile is the desktop-specific way of opening a file
