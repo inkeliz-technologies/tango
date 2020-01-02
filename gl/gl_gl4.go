@@ -4455,6 +4455,10 @@ func (c *Context) Enable(flag int) {
 	gl.Enable(uint32(flag))
 }
 
+func (c *Context) IsEnabled(flag int) bool {
+	return gl.IsEnabled(uint32(flag))
+}
+
 func (c *Context) Disable(flag int) {
 	gl.Disable(uint32(flag))
 }
