@@ -60,8 +60,8 @@ func (m *CursorSystem) Update(dt float32) {
 
 	curX, curY := tango.CursorPos()
 
-	m.Cursor.Position.X = math32.Clamp(curX, 0, tango.GameWidth()-1)
-	m.Cursor.Position.Y = math32.Clamp(curY, 0, tango.GameHeight()-1)
+	m.Cursor.Position.X = math32.Clamp(curX, 1, tango.GameWidth()-1)
+	m.Cursor.Position.Y = math32.Clamp(curY, 1, tango.GameHeight()-1)
 
 	tango.SetCursorPosition(m.Cursor.Position.X, m.Cursor.Position.Y)
 }

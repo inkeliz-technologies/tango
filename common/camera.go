@@ -398,8 +398,8 @@ func (c *KeyboardRotator) Update(dt float32) {
 	if (c.remaining * c.rotation) > 0 {
 		l := float32(len(c.RotationAcceleration))
 
-		walk := c.RotationAcceleration[int(math32.Clamp(math32.Ceil(math32.Abs(c.remaining)/(c.RotationSpeed/l))-1, 0, l-1))]
-		c.remaining = c.remaining - (walk * c.rotation)
+		walk := c.RotationAcceleration[int(math32.Clamp(math32.Ceil(math32.Abs(c.remaining)/(c.RotationSpeed/l))-1, 0, l-1))] * c.rotation
+		c.remaining = c.remaining - walk
 
 		tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: walk, Incremental: true})
 		return
@@ -488,8 +488,11 @@ func (c *EntityScroller) Update(dt float32) {
 // EdgeScroller is a System that allows for scrolling when the cursor is near the edges of
 // the window.
 type EdgeScroller struct {
-	ScrollSpeed float32
-	EdgeMargin  float32
+	ScrollSpeed              float32
+	ScrollLinearAcceleration bool
+	// Deprecated use {Top|Right|Bottom|Left}Margin instead
+	EdgeMargin                                       float32
+	TopMargin, RightMargin, BottomMargin, LeftMargin float32
 }
 
 // Priority implements the ecs.Prioritizer interface.
@@ -499,38 +502,59 @@ func (*EdgeScroller) Priority() int { return EdgeScrollerPriority }
 // interface.
 func (*EdgeScroller) Remove(ecs.BasicEntity) {}
 
+func (c *EdgeScroller) New(_ *ecs.World) {
+	if c.TopMargin+c.RightMargin+c.BottomMargin+c.LeftMargin == 0 {
+		c.TopMargin, c.RightMargin, c.BottomMargin, c.LeftMargin = c.EdgeMargin, c.EdgeMargin, c.EdgeMargin, c.EdgeMargin
+	}
+}
+
 // Update moves the camera based on the position of the mouse. If the mouse is on the edge
 // of the screen, the camera moves towards that edge.
 // TODO: Warning doesn't get the cursor position
 func (c *EdgeScroller) Update(dt float32) {
-	curX, curY := tango.CursorPos()
+	const cornerSpeed = 1.41421356237 // sqrt(2)
+
+	curX, curY := tango.Input.Mouse.X, tango.Input.Mouse.Y
 	maxX, maxY := tango.GameWidth(), tango.GameHeight()
 
-	if curX < c.EdgeMargin && curY < c.EdgeMargin {
-		s := math32.Sqrt(2)
-		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
-		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
-	} else if curX < c.EdgeMargin && curY > maxY-c.EdgeMargin {
-		s := math32.Sqrt(2)
-		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
-		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
-	} else if curX > maxX-c.EdgeMargin && curY < c.EdgeMargin {
-		s := math32.Sqrt(2)
-		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
-		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt / s, Incremental: true})
-	} else if curX > maxX-c.EdgeMargin && curY > maxY-c.EdgeMargin {
-		s := math32.Sqrt(2)
-		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
-		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt / s, Incremental: true})
-	} else if curX < c.EdgeMargin {
-		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: -c.ScrollSpeed * dt, Incremental: true})
-	} else if curX > maxX-c.EdgeMargin {
-		tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: c.ScrollSpeed * dt, Incremental: true})
-	} else if curY < c.EdgeMargin {
-		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: -c.ScrollSpeed * dt, Incremental: true})
-	} else if curY > maxY-c.EdgeMargin {
-		tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: c.ScrollSpeed * dt, Incremental: true})
+	directionX, directionY := float32(0), float32(0)
+	acX, acY := float32(1), float32(1)
+
+	if d := c.TopMargin - curY; d >= 0 {
+		directionY, acY = -1, math32.Clamp(c.TopMargin-d, 1, c.TopMargin)
 	}
+
+	if d := curY - (maxY - c.BottomMargin); d >= 0 {
+		directionY, acY = 1, math32.Clamp(c.BottomMargin-d, 1, c.BottomMargin)
+	}
+
+	if d := c.LeftMargin - curX; d >= 0 {
+		directionX, acX = -1, math32.Clamp(c.LeftMargin-d, 1, c.LeftMargin)
+	}
+
+	if d := curX - (maxX - c.RightMargin); d >= 0 {
+		directionX, acX = 1, math32.Clamp(c.RightMargin-d, 1, c.RightMargin)
+	}
+
+	if directionX == 0 && directionY == 0 {
+		return
+	}
+
+	divider := float32(1)
+	if directionX != 0 && directionY != 0 {
+		divider = cornerSpeed
+	}
+
+	if !c.ScrollLinearAcceleration {
+		acX, acY = 1, 1
+	}
+
+	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: (c.ScrollSpeed * directionX * dt) / (divider * acX), Incremental: true})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: (c.ScrollSpeed * directionY * dt) / (divider * acY), Incremental: true})
+}
+
+func (c *EdgeScroller) SetMargins(top, right, bottom, left float32) {
+	c.TopMargin, c.RightMargin, c.BottomMargin, c.LeftMargin = top, right, bottom, left
 }
 
 // MouseZoomer is a System that allows for zooming when the scroll wheel is used.
