@@ -493,6 +493,12 @@ type EdgeScroller struct {
 	// Deprecated use {Top|Right|Bottom|Left}Margin instead
 	EdgeMargin                                       float32
 	TopMargin, RightMargin, BottomMargin, LeftMargin float32
+
+	currentX, currentY           float32
+	maximumX, maximumY           float32
+	scrollX, scrollY             float32
+	accelerationX, accelerationY float32
+	divider                      float32
 }
 
 // Priority implements the ecs.Prioritizer interface.
@@ -512,45 +518,46 @@ func (c *EdgeScroller) New(_ *ecs.World) {
 // of the screen, the camera moves towards that edge.
 // TODO: Warning doesn't get the cursor position
 func (c *EdgeScroller) Update(dt float32) {
-	const cornerSpeed = 1.41421356237 // sqrt(2)
+	const cornerSpeed = float32(1.41421356237)
 
-	curX, curY := tango.Input.Mouse.X, tango.Input.Mouse.Y
-	maxX, maxY := tango.GameWidth(), tango.GameHeight()
+	c.currentX, c.currentY = tango.Input.Mouse.X, tango.Input.Mouse.Y
+	c.maximumX, c.maximumY = tango.GameWidth()-c.RightMargin, tango.GameHeight()-c.BottomMargin
 
-	directionX, directionY := float32(0), float32(0)
-	acX, acY := float32(1), float32(1)
+	c.scrollX, c.scrollY = float32(0), float32(0)
+	c.accelerationX, c.accelerationY = float32(0), float32(0)
 
-	if d := c.TopMargin - curY; d >= 0 {
-		directionY, acY = -1, math32.Clamp(c.TopMargin-d, 1, c.TopMargin)
+	if c.currentY <= c.TopMargin {
+		c.scrollY, c.accelerationY = -1, math32.Clamp(c.TopMargin-(c.TopMargin-c.currentY), 1, c.TopMargin)
 	}
 
-	if d := curY - (maxY - c.BottomMargin); d >= 0 {
-		directionY, acY = 1, math32.Clamp(c.BottomMargin-d, 1, c.BottomMargin)
+	if c.currentY >= c.maximumY {
+		c.scrollY, c.accelerationY = 1, math32.Clamp(c.BottomMargin-(c.currentY-c.maximumY), 1, c.BottomMargin)
 	}
 
-	if d := c.LeftMargin - curX; d >= 0 {
-		directionX, acX = -1, math32.Clamp(c.LeftMargin-d, 1, c.LeftMargin)
+	if c.currentX <= c.LeftMargin {
+		c.scrollX, c.accelerationX = -1, math32.Clamp(c.LeftMargin-(c.LeftMargin-c.currentX), 1, c.LeftMargin)
 	}
 
-	if d := curX - (maxX - c.RightMargin); d >= 0 {
-		directionX, acX = 1, math32.Clamp(c.RightMargin-d, 1, c.RightMargin)
+	if c.currentX >= c.maximumX {
+		c.scrollX, c.accelerationX = 1, math32.Clamp(c.RightMargin-(c.currentX-c.maximumX), 1, c.RightMargin)
 	}
 
-	if directionX == 0 && directionY == 0 {
+	if c.scrollX == 0 && c.scrollY == 0 {
 		return
 	}
 
-	divider := float32(1)
-	if directionX != 0 && directionY != 0 {
-		divider = cornerSpeed
+	if c.scrollX != 0 && c.scrollY != 0 {
+		if c.ScrollLinearAcceleration {
+			c.divider = math32.Sqrt(2 * ((c.accelerationX + c.accelerationY) / 2))
+		} else {
+			c.divider = cornerSpeed
+		}
+	} else {
+		c.divider = 1 * (c.accelerationX + c.accelerationY)
 	}
 
-	if !c.ScrollLinearAcceleration {
-		acX, acY = 1, 1
-	}
-
-	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: (c.ScrollSpeed * directionX * dt) / (divider * acX), Incremental: true})
-	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: (c.ScrollSpeed * directionY * dt) / (divider * acY), Incremental: true})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: (c.ScrollSpeed * c.scrollX * dt) / math32.Sqrt(c.divider), Incremental: true})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: (c.ScrollSpeed * c.scrollY * dt) / math32.Sqrt(c.divider), Incremental: true})
 }
 
 func (c *EdgeScroller) SetMargins(top, right, bottom, left float32) {
