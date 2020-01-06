@@ -4463,6 +4463,10 @@ func (c *Context) Disable(flag int) {
 	gl.Disable(uint32(flag))
 }
 
+func (c *Context) Hint(target, mode int) {
+	gl.Hint(uint32(target), uint32(mode))
+}
+
 func (c *Context) BlendFunc(src, dst int) {
 	gl.BlendFunc(uint32(src), uint32(dst))
 }
