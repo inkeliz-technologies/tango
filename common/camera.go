@@ -380,14 +380,15 @@ type KeyboardRotator struct {
 	rotation  float32
 }
 
-// Priority implements the ecs.Prioritizer interface.
-func (*KeyboardRotator) Priority() int { return KeyboardRotatorPriority }
-
+// New defines a default value if missing
 func (c *KeyboardRotator) New(_ *ecs.World) {
 	if c.RotationAcceleration == nil {
 		c.RotationAcceleration = []float32{c.RotationSpeed}
 	}
 }
+
+// Priority implements the ecs.Prioritizer interface.
+func (*KeyboardRotator) Priority() int { return KeyboardRotatorPriority }
 
 // Remove does nothing because the KeyboardRotator system has no entities. It implements the
 // ecs.System interface.
@@ -567,6 +568,24 @@ func (c *EdgeScroller) SetMargins(top, right, bottom, left float32) {
 // MouseZoomer is a System that allows for zooming when the scroll wheel is used.
 type MouseZoomer struct {
 	ZoomSpeed float32
+	Steps     []float32
+	Duration  time.Duration
+
+	camera *CameraSystem
+}
+
+// New set default values and camera
+func (c *MouseZoomer) New(w *ecs.World) {
+	for _, sys := range w.Systems() {
+		switch sys.(type) {
+		case *CameraSystem:
+			c.camera = sys.(*CameraSystem)
+		}
+	}
+
+	if c.camera == nil {
+		warning("missing camera system in the world")
+	}
 }
 
 // Priority implements the ecs.Prioritizer interface.
@@ -578,9 +597,31 @@ func (*MouseZoomer) Remove(ecs.BasicEntity) {}
 
 // Update zooms the camera in and out based on the movement of the scroll wheel.
 func (c *MouseZoomer) Update(float32) {
-	if tango.Input.Mouse.ScrollY != 0 {
-		tango.Mailbox.Dispatch(CameraMessage{Axis: ZAxis, Value: tango.Input.Mouse.ScrollY * c.ZoomSpeed, Incremental: true})
+	scroll := math32.Clamp(tango.Input.Mouse.ScrollY, -1, 1)
+	if scroll == 0 {
+		return
 	}
+
+	if c.Steps == nil {
+		scroll = scroll * c.ZoomSpeed
+	} else {
+		// TODO cache the current z-position relative to Steps
+		for i, step := range c.Steps {
+			if step == c.camera.Z() {
+				switch {
+				case scroll < 0 && len(c.Steps) > i+1:
+					scroll = c.Steps[i+1]
+				case scroll > 0 && i >= 1:
+					scroll = c.Steps[i-1]
+				default:
+					return
+				}
+				break
+			}
+		}
+	}
+
+	tango.Mailbox.Dispatch(CameraMessage{Axis: ZAxis, Value: scroll, Duration: c.Duration, Incremental: c.Steps == nil})
 }
 
 // MouseRotator is a System that allows for rotating the camera based on pressing
