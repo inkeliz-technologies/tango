@@ -364,6 +364,11 @@ func NewKeyboardScroller(scrollSpeed float32, hori, vert string) *KeyboardScroll
 	return kbs
 }
 
+var (
+	RotatorSteps90 = []float32{0, 90, 180, 270}
+	RotatorSteps45 = []float32{0, 45, 90, 135, 180, 225, 270, 315}
+)
+
 // KeyboardScroller is a System that allows for scrolling when certain keys are pressed.
 type KeyboardRotator struct {
 	RotationSpeed                  float32
@@ -371,19 +376,24 @@ type KeyboardRotator struct {
 	// DisableHolding prevent holding the key, useful for a stepped rotation like The Sims 1 (90º each press).
 	HoldingDisabled bool
 
-	// RotationAcceleration prevents roughly change of the roration while HoldingDisabled is TRUE
+	// RotationDuration prevents roughly change of the roration while HoldingDisabled is TRUE
 	// It doesn't have effect if HoldingDisabled is FALSE (default)
-	// It's not safe to change after defined!
-	RotationAcceleration []float32
-
-	remaining float32
-	rotation  float32
+	RotationDuration time.Duration
+	RotationSteps    []float32
+	camera           *CameraSystem
 }
 
-// New defines a default value if missing
-func (c *KeyboardRotator) New(_ *ecs.World) {
-	if c.RotationAcceleration == nil {
-		c.RotationAcceleration = []float32{c.RotationSpeed}
+// New set default values and camera
+func (c *KeyboardRotator) New(w *ecs.World) {
+	for _, sys := range w.Systems() {
+		switch sys.(type) {
+		case *CameraSystem:
+			c.camera = sys.(*CameraSystem)
+		}
+	}
+
+	if c.camera == nil {
+		warning("missing camera system in the world")
 	}
 }
 
@@ -396,16 +406,6 @@ func (*KeyboardRotator) Remove(ecs.BasicEntity) {}
 
 // Update updates the camera based on keyboard input.
 func (c *KeyboardRotator) Update(dt float32) {
-	if (c.remaining * c.rotation) > 0 {
-		l := float32(len(c.RotationAcceleration))
-
-		walk := c.RotationAcceleration[int(math32.Clamp(math32.Ceil(math32.Abs(c.remaining)/(c.RotationSpeed/l))-1, 0, l-1))] * c.rotation
-		c.remaining = c.remaining - walk
-
-		tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: walk, Incremental: true})
-		return
-	}
-
 	rotation := float32(0)
 	if cb := tango.Input.Button(c.ClockwiseKey); cb.JustPressed() || (cb.Down() && !c.HoldingDisabled) {
 		rotation += 1
@@ -415,14 +415,33 @@ func (c *KeyboardRotator) Update(dt float32) {
 		rotation -= 1
 	}
 
-	if rotation != 0 {
-		if c.HoldingDisabled {
-			c.remaining = rotation * c.RotationSpeed
-			c.rotation = rotation
-		} else {
-			tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: rotation * c.RotationSpeed, Incremental: true})
-		}
+	if rotation == 0 {
+		return
 	}
+
+	rotation *= c.RotationSpeed
+	for i, step := range c.RotationSteps {
+		if step != c.camera.Angle() {
+			continue
+		}
+
+		l := len(c.RotationSteps)
+		switch {
+		case rotation < 0 && l > i+1:
+			rotation = c.RotationSteps[i+1]
+		case rotation < 0 && l <= i+1:
+			rotation = c.RotationSteps[0]
+		case rotation > 0 && i >= 1:
+			rotation = c.RotationSteps[i-1]
+		case rotation > 0 && i <= 1:
+			rotation = c.RotationSteps[l-1]
+		default:
+			return
+		}
+		break
+	}
+
+	tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: rotation, Duration: c.RotationDuration, Incremental: c.RotationSteps == nil})
 }
 
 // BindKeyboard sets the vertical and horizontal axes used by the KeyboardScroller.
@@ -597,28 +616,25 @@ func (*MouseZoomer) Remove(ecs.BasicEntity) {}
 
 // Update zooms the camera in and out based on the movement of the scroll wheel.
 func (c *MouseZoomer) Update(float32) {
-	scroll := math32.Clamp(tango.Input.Mouse.ScrollY, -1, 1)
+	scroll := math32.Clamp(tango.Input.Mouse.ScrollY, -1, 1) * c.ZoomSpeed
 	if scroll == 0 {
 		return
 	}
 
-	if c.Steps == nil {
-		scroll = scroll * c.ZoomSpeed
-	} else {
-		// TODO cache the current z-position relative to Steps
-		for i, step := range c.Steps {
-			if step == c.camera.Z() {
-				switch {
-				case scroll < 0 && len(c.Steps) > i+1:
-					scroll = c.Steps[i+1]
-				case scroll > 0 && i >= 1:
-					scroll = c.Steps[i-1]
-				default:
-					return
-				}
-				break
-			}
+	for i, step := range c.Steps {
+		if step != c.camera.Z() {
+			continue
 		}
+
+		switch {
+		case scroll > 0 && len(c.Steps) > i+1:
+			scroll = c.Steps[i+1]
+		case scroll < 0 && i >= 1:
+			scroll = c.Steps[i-1]
+		default:
+			return
+		}
+		break
 	}
 
 	tango.Mailbox.Dispatch(CameraMessage{Axis: ZAxis, Value: scroll, Duration: c.Duration, Incremental: c.Steps == nil})
