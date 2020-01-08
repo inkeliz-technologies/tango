@@ -9,8 +9,8 @@ import (
 
 	"github.com/inkeliz-technologies/ecs"
 	"github.com/inkeliz-technologies/tango"
-	"github.com/inkeliz-technologies/tango/math32"
 	"github.com/inkeliz-technologies/tango/gl"
+	"github.com/inkeliz-technologies/tango/math32"
 )
 
 // UnicodeCap is the amount of unicode characters the fonts will be able to use, starting from index 0.
@@ -45,13 +45,6 @@ const (
 `
 
 	defaultFragmentShader = `
-	#ifdef GL_ES
-	#define LOWP lowp
-	precision mediump float;
-	#else
-	#define LOWP
-	#endif
-
 	varying vec4 var_Color;
 	varying vec2 var_TexCoords;
 
@@ -179,6 +172,13 @@ func (s *basicShader) Pre() {
 	tango.Gl.EnableVertexAttribArray(s.inTexCoords)
 	tango.Gl.EnableVertexAttribArray(s.inColor)
 
+	tango.Gl.Enable(tango.Gl.POLYGON_SMOOTH)
+	tango.Gl.Enable(tango.Gl.LINE_SMOOTH)
+
+	tango.Gl.Hint(tango.Gl.TEXTURE_COMPRESSION_HINT, tango.Gl.NICEST)
+	tango.Gl.Hint(tango.Gl.POLYGON_SMOOTH_HINT, tango.Gl.NICEST)
+	tango.Gl.Hint(tango.Gl.LINE_SMOOTH_HINT, tango.Gl.NICEST)
+
 	// The matrixProjView shader uniform is projection * view.
 	// We do the multiplication on the CPU instead of sending each matrix to the shader and letting the GPU do the multiplication,
 	// because it's likely faster to do the multiplication client side and send the result over the shader bus than to send two separate
@@ -253,11 +253,7 @@ func (s *basicShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		s.flush()
 		var val int
 		switch ren.Repeat {
-		case NoRepeat:
-			val = tango.Gl.CLAMP_TO_EDGE
-		case ClampToEdge:
-			val = tango.Gl.CLAMP_TO_EDGE
-		case ClampToBorder:
+		case NoRepeat, ClampToEdge, ClampToBorder:
 			val = tango.Gl.CLAMP_TO_EDGE
 		case Repeat:
 			val = tango.Gl.REPEAT
@@ -289,9 +285,9 @@ func (s *basicShader) Draw(ren *RenderComponent, space *SpaceComponent) {
 		var val int
 		switch ren.minFilter {
 		case FilterNearest:
-			val = tango.Gl.NEAREST
+			val = tango.Gl.NEAREST_MIPMAP_NEAREST
 		case FilterLinear:
-			val = tango.Gl.LINEAR
+			val = tango.Gl.LINEAR_MIPMAP_LINEAR
 		}
 		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MIN_FILTER, val)
 
