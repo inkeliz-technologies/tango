@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	// imported to decode jpegs and upload them to the GPU.
 	_ "image/jpeg"
@@ -83,52 +84,60 @@ func (i *imageLoader) Resource(url string) (tango.Resource, error) {
 
 // Image holds data and properties of an .jpg, .gif, or .png file
 type Image interface {
+	image.Image
 	Data() interface{}
 	Width() int
 	Height() int
 }
 
 // UploadTexture sends the image to the GPU, to be kept in GPU RAM
-func UploadTexture(img Image) *gl.Texture {
-	var id *gl.Texture
-	if !tango.Headless() {
-		id = tango.Gl.CreateTexture()
-
-		tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, id)
-
-		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, tango.Gl.CLAMP_TO_EDGE)
-		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, tango.Gl.CLAMP_TO_EDGE)
-		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MIN_FILTER, tango.Gl.LINEAR)
-		tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MAG_FILTER, tango.Gl.NEAREST)
-
-		if img.Data() == nil {
-			panic("Texture image data is nil.")
-		}
-
-		tango.Gl.TexImage2D(tango.Gl.TEXTURE_2D, 0, tango.Gl.RGBA, tango.Gl.RGBA, tango.Gl.UNSIGNED_BYTE, img.Data())
+func UploadTexture(img Image) (id *gl.Texture) {
+	if tango.Headless() {
+		return id
 	}
+
+	if img.Data() == nil {
+		panic("Texture image data is nil.")
+	}
+
+	id = tango.Gl.CreateTexture()
+	tango.Gl.BindTexture(tango.Gl.TEXTURE_2D, id)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_S, tango.Gl.CLAMP_TO_EDGE)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_WRAP_T, tango.Gl.CLAMP_TO_EDGE)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MIN_FILTER, tango.Gl.LINEAR)
+	tango.Gl.TexParameteri(tango.Gl.TEXTURE_2D, tango.Gl.TEXTURE_MAG_FILTER, tango.Gl.NEAREST)
+	tango.Gl.TexImage2D(tango.Gl.TEXTURE_2D, 0, tango.Gl.RGBA, tango.Gl.RGBA, tango.Gl.UNSIGNED_BYTE, img.Data())
+
 	return id
 }
 
-// NewTextureResource sends the image to the GPU and returns a `TextureResource` for easy access
-func NewTextureResource(img Image) TextureResource {
-	id := UploadTexture(img)
-	return TextureResource{Texture: id, Width: float32(img.Width()), Height: float32(img.Height())}
+// NewTextureResource sends any image.Image to the GPU and returns a `TextureResource` for easy access
+func NewTextureResource(img image.Image) TextureResource {
+	obj, ok := img.(Image)
+	if !ok {
+		obj = NewImageObject(img)
+	}
+
+	return TextureResource{Texture: UploadTexture(obj), Width: float32(obj.Width()), Height: float32(obj.Height())}
 }
 
-// NewTextureSingle sends the image to the GPU and returns a `Texture` with a viewport for single-sprite images
-func NewTextureSingle(img Image) Texture {
-	id := UploadTexture(img)
-	return Texture{id, float32(img.Width()), float32(img.Height()), tango.AABB{Max: tango.Point{X: 1.0, Y: 1.0}}}
+// NewTextureSingle sends any image.Image to the GPU and returns a `Texture` with a viewport for single-sprite images
+func NewTextureSingle(img image.Image) Texture {
+	obj, ok := img.(Image)
+	if !ok {
+		obj = NewImageObject(img)
+	}
+
+	return Texture{id: UploadTexture(obj), width: float32(obj.Width()), height: float32(obj.Height()), viewport: tango.AABB{Max: tango.Point{X: 1.0, Y: 1.0}}}
 }
 
 // ImageToNRGBA takes a given `image.Image` and converts it into an `image.NRGBA`. Especially useful when transforming
 // image.Uniform to something usable by `tango`.
-func ImageToNRGBA(img image.Image, width, height int) *image.NRGBA {
-	newm := image.NewNRGBA(image.Rect(0, 0, width, height))
-	draw.Draw(newm, newm.Bounds(), img, image.Point{0, 0}, draw.Src)
+func ImageToNRGBA(img image.Image, width, height int) (nrgba *image.NRGBA) {
+	nrgba = image.NewNRGBA(image.Rect(0, 0, width, height))
+	draw.Draw(nrgba, nrgba.Rect, img, image.Point{X: 0, Y: 0}, draw.Src)
 
-	return newm
+	return nrgba
 }
 
 // ImageObject is a pure Go implementation of a `Drawable`
@@ -136,9 +145,35 @@ type ImageObject struct {
 	data *image.NRGBA
 }
 
-// NewImageObject creates a new ImageObject given the image.NRGBA reference
-func NewImageObject(img *image.NRGBA) *ImageObject {
-	return &ImageObject{img}
+// NewImageObject creates a new ImageObject given any image.Image reference
+func NewImageObject(img image.Image) *ImageObject {
+	nrgba, ok := img.(*image.NRGBA)
+	if !ok {
+		size := img.Bounds().Size()
+		nrgba = ImageToNRGBA(img, size.X, size.Y)
+	}
+
+	return NewImageObjectNRGBA(nrgba)
+}
+
+// NewImageObjectNRGBA creates a new ImageObject given image.NRGBA reference
+func NewImageObjectNRGBA(nrgba *image.NRGBA) *ImageObject {
+	return &ImageObject{data: nrgba}
+}
+
+// ColorModel implements image.Image
+func (i *ImageObject) ColorModel() color.Model {
+	return i.data.ColorModel()
+}
+
+// Bounds implements image.Image
+func (i *ImageObject) Bounds() image.Rectangle {
+	return i.data.Bounds()
+}
+
+// At implements image.Image
+func (i *ImageObject) At(x, y int) color.Color {
+	return i.data.At(x, y)
 }
 
 // Data returns the entire image.NRGBA object
@@ -202,9 +237,11 @@ func (t Texture) View() (float32, float32, float32, float32) {
 
 // Close removes the Texture data from the GPU.
 func (t Texture) Close() {
-	if !tango.Headless() {
-		tango.Gl.DeleteTexture(t.id)
+	if tango.Headless() {
+		return
 	}
+
+	tango.Gl.DeleteTexture(t.id)
 }
 
 func init() {
