@@ -25,9 +25,14 @@ func NewKeyManager() *KeyManager {
 
 // KeyManager tracks which keys are pressed and released at the current point of time.
 type KeyManager struct {
+	muted bool
 	dirtmap map[Key]Key
 	mapper  map[Key]KeyState
 	mutex   sync.RWMutex
+}
+
+func (km *KeyManager) SetMute(muted bool) {
+	km.muted = muted
 }
 
 // Set is used for updating whether or not a key is held down, or not held down.
@@ -44,6 +49,19 @@ func (km *KeyManager) Set(k Key, state bool) {
 
 // Get retrieves a keys state.
 func (km *KeyManager) Get(k Key) KeyState {
+	if km.muted {
+		return KeyState{lastState: false, currentState: false}
+	}
+
+	return km.get(k)
+}
+
+// GetIgnoreMuted retrieves a keys state even with it's muted
+func (km *KeyManager) GetIgnoreMuted(k Key) KeyState {
+	return km.get(k)
+}
+
+func (km *KeyManager) get(k Key) KeyState {
 	km.mutex.RLock()
 	ks := km.mapper[k]
 	km.mutex.RUnlock()
@@ -93,20 +111,20 @@ func (key *KeyState) State() int {
 
 // JustPressed returns whether a key was just pressed
 func (key KeyState) JustPressed() bool {
-	return (!key.lastState && key.currentState)
+	return !key.lastState && key.currentState
 }
 
 // JustReleased returns whether a key was just released
 func (key KeyState) JustReleased() bool {
-	return (key.lastState && !key.currentState)
+	return key.lastState && !key.currentState
 }
 
-// Up returns wheter a key is not being pressed
+// Up returns whether a key is not being pressed
 func (key KeyState) Up() bool {
-	return (!key.lastState && !key.currentState)
+	return !key.lastState && !key.currentState
 }
 
-// Down returns wether a key is being pressed
+// Down returns whether a key is being pressed
 func (key KeyState) Down() bool {
-	return (key.lastState && key.currentState)
+	return key.lastState && key.currentState
 }

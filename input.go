@@ -39,6 +39,11 @@ func (im *InputManager) update() {
 	im.keys.update()
 }
 
+// Mute mutes any key pressed returning as not pressed until unmuted
+func (im *InputManager) SetMute(muted bool) {
+	im.keys.SetMute(muted)
+}
+
 // RegisterAxis registers a new axis which can be used to retrieve inputs which are spectrums.
 func (im *InputManager) RegisterAxis(name string, pairs ...AxisPair) {
 	im.axes[name] = Axis{
