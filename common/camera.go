@@ -576,8 +576,9 @@ func (c *EdgeScroller) Update(dt float32) {
 		c.divider = 1 * (c.accelerationX + c.accelerationY)
 	}
 
-	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: (c.ScrollSpeed * c.scrollX * dt) / math32.Sqrt(c.divider), Incremental: true})
-	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: (c.ScrollSpeed * c.scrollY * dt) / math32.Sqrt(c.divider), Incremental: true})
+
+	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: (c.ScrollSpeed * c.scrollX * dt) / c.divider, Incremental: true})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: (c.ScrollSpeed * c.scrollY * dt) / c.divider, Incremental: true})
 }
 
 func (c *EdgeScroller) SetMargins(top, right, bottom, left float32) {
