@@ -456,6 +456,84 @@ func NewKeyboardRotator(rotationSpeed float32, clockwiseKey, anticlockwiseKey st
 	}
 }
 
+// KeyboardZoomer is a System that allows for zooming by pressing a keyboard key
+type KeyboardZoomer struct {
+	ZoomSpeed             float32
+	ZoomDuration          time.Duration
+	ZoomInKey, ZoomOutKey string
+	HoldingDisabled       bool
+	Steps
+
+	camera *CameraSystem
+}
+
+// New set default values and camera
+func (c *KeyboardZoomer) New(w *ecs.World) {
+	for _, sys := range w.Systems() {
+		switch sys.(type) {
+		case *CameraSystem:
+			c.camera = sys.(*CameraSystem)
+		}
+	}
+
+	if c.camera == nil {
+		warning("missing camera system in the world")
+	}
+
+	c.SetInfinite(true)
+}
+
+// Priority implements the ecs.Prioritizer interface.
+func (*KeyboardZoomer) Priority() int { return MouseZoomerPriority }
+
+// Remove does nothing because KeyboardZoomer has no entities. This implements the
+// ecs.System interface.
+func (*KeyboardZoomer) Remove(ecs.BasicEntity) {}
+
+// Update zooms the camera in and out based on the movement of the scroll wheel.
+func (c *KeyboardZoomer) Update(float32) {
+	zoom := float32(0)
+	if cb := tango.Input.Button(c.ZoomInKey); cb.JustPressed() || (cb.Down() && !c.HoldingDisabled) {
+		zoom += 1
+	}
+
+	if ab := tango.Input.Button(c.ZoomOutKey); ab.JustPressed() || (ab.Down() && !c.HoldingDisabled) {
+		zoom -= 1
+	}
+
+	if zoom == 0 {
+		return
+	}
+
+	zoom *= c.ZoomSpeed
+	if c.IsStepped() {
+		value, found := c.Steps.Get(c.camera.Z(), zoom > 0)
+		if !found {
+			return
+		}
+
+		zoom = value
+	}
+
+	tango.Mailbox.Dispatch(CameraMessage{Axis: ZAxis, Value: zoom, Duration: c.ZoomDuration, Incremental: !c.IsStepped()})
+}
+
+// BindKeyboard sets the vertical and horizontal axes used by the KeyboardScroller.
+func (c *KeyboardZoomer) BindKeyboard(zoomInKey, zoomOutKey string) {
+	c.ZoomInKey = zoomInKey
+	c.ZoomOutKey = zoomOutKey
+}
+
+// KeyboardRotator creates a new KeyboardRotator system
+func NewKeyboardZoomer(zoomSpeed float32, zoomInKey, zoomOutKey string, disableHolding bool) *KeyboardZoomer {
+	return &KeyboardZoomer{
+		ZoomSpeed:       zoomSpeed,
+		ZoomInKey:       zoomInKey,
+		ZoomOutKey:      zoomOutKey,
+		HoldingDisabled: disableHolding,
+	}
+}
+
 // EntityScroller scrolls the camera to the position of a entity using its space component.
 type EntityScroller struct {
 	*SpaceComponent
