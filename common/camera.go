@@ -103,27 +103,9 @@ func (cam *CameraSystem) New(w *ecs.World) {
 		}
 
 		if cammsg.Incremental {
-			switch cammsg.Axis {
-			case XAxis:
-				cam.moveX(cammsg.Value)
-			case YAxis:
-				cam.moveY(cammsg.Value)
-			case ZAxis:
-				cam.zoom(cammsg.Value)
-			case Angle:
-				cam.rotate(cammsg.Value)
-			}
+			cam.moveAxis(cammsg.Axis, cammsg.Value)
 		} else {
-			switch cammsg.Axis {
-			case XAxis:
-				cam.moveToX(cammsg.Value)
-			case YAxis:
-				cam.moveToY(cammsg.Value)
-			case ZAxis:
-				cam.zoomTo(cammsg.Value)
-			case Angle:
-				cam.rotateTo(cammsg.Value)
-			}
+			cam.moveAxisTo(cammsg.Axis, cammsg.Value)
 		}
 	})
 
@@ -139,6 +121,7 @@ func (cam *CameraSystem) Update(dt float32) {
 	for axis, longTask := range cam.longTasks {
 		if !longTask.Incremental {
 			longTask.Incremental = true
+			longTask.value = longTask.Value
 
 			switch axis {
 			case XAxis:
@@ -157,20 +140,16 @@ func (cam *CameraSystem) Update(dt float32) {
 			longTask.speed = longTask.Value / float32(longTask.Duration.Seconds())
 		}
 
-		dAxis := longTask.speed * dt
-		switch axis {
-		case XAxis:
-			cam.moveX(dAxis)
-		case YAxis:
-			cam.moveY(dAxis)
-		case ZAxis:
-			cam.zoom(dAxis)
-		case Angle:
-			cam.rotate(dAxis)
-		}
+		cam.moveAxis(axis, longTask.speed*dt)
 
-		longTask.Duration -= time.Duration(dt)
+		longTask.Duration -= time.Duration(dt * float32(time.Second))
 		if longTask.Duration <= time.Duration(0) {
+
+			// it enforces that the last call will have the exactly position set by `Value` when `incremental = false`.
+			if longTask.value != 0 {
+				cam.moveAxisTo(axis, longTask.value)
+			}
+
 			delete(cam.longTasks, axis)
 		}
 	}
@@ -241,6 +220,32 @@ func (cam *CameraSystem) moveY(value float32) {
 	}
 }
 
+func (cam *CameraSystem) moveAxis(axis CameraAxis, value float32) {
+	switch axis {
+	case XAxis:
+		cam.moveX(value)
+	case YAxis:
+		cam.moveY(value)
+	case ZAxis:
+		cam.zoom(value)
+	case Angle:
+		cam.rotate(value)
+	}
+}
+
+func (cam *CameraSystem) moveAxisTo(axis CameraAxis, value float32) {
+	switch axis {
+	case XAxis:
+		cam.moveToX(value)
+	case YAxis:
+		cam.moveToY(value)
+	case ZAxis:
+		cam.zoomTo(value)
+	case Angle:
+		cam.rotateTo(value)
+	}
+}
+
 func (cam *CameraSystem) zoom(value float32) {
 	cam.zoomTo(cam.z + value)
 }
@@ -288,11 +293,11 @@ const (
 // CameraMessage is a message that can be sent to the Camera (and other Systemers),
 // to indicate movement.
 type CameraMessage struct {
-	Axis        CameraAxis
-	Value       float32
-	Incremental bool
-	Duration    time.Duration
-	speed       float32
+	Axis         CameraAxis
+	Value        float32
+	Incremental  bool
+	Duration     time.Duration
+	value, speed float32
 }
 
 // Type implements the tango.Message interface.
@@ -379,8 +384,8 @@ type KeyboardRotator struct {
 	// RotationDuration prevents roughly change of the roration while HoldingDisabled is TRUE
 	// It doesn't have effect if HoldingDisabled is FALSE (default)
 	RotationDuration time.Duration
-	RotationSteps    []float32
-	camera           *CameraSystem
+	Steps
+	camera *CameraSystem
 }
 
 // New set default values and camera
@@ -395,6 +400,8 @@ func (c *KeyboardRotator) New(w *ecs.World) {
 	if c.camera == nil {
 		warning("missing camera system in the world")
 	}
+
+	c.SetInfinite(true)
 }
 
 // Priority implements the ecs.Prioritizer interface.
@@ -420,28 +427,17 @@ func (c *KeyboardRotator) Update(dt float32) {
 	}
 
 	rotation *= c.RotationSpeed
-	for i, step := range c.RotationSteps {
-		if step != c.camera.Angle() {
-			continue
-		}
 
-		l := len(c.RotationSteps)
-		switch {
-		case rotation < 0 && l > i+1:
-			rotation = c.RotationSteps[i+1]
-		case rotation < 0 && l <= i+1:
-			rotation = c.RotationSteps[0]
-		case rotation > 0 && i >= 1:
-			rotation = c.RotationSteps[i-1]
-		case rotation > 0 && i <= 1:
-			rotation = c.RotationSteps[l-1]
-		default:
+	if c.IsStepped() {
+		value, found := c.Steps.Get(c.camera.Angle(), rotation < 0)
+		if !found {
 			return
 		}
-		break
+
+		rotation = value
 	}
 
-	tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: rotation, Duration: c.RotationDuration, Incremental: c.RotationSteps == nil})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: Angle, Value: rotation, Duration: c.RotationDuration, Incremental: !c.IsStepped()})
 }
 
 // BindKeyboard sets the vertical and horizontal axes used by the KeyboardScroller.
@@ -576,7 +572,6 @@ func (c *EdgeScroller) Update(dt float32) {
 		c.divider = 1 * (c.accelerationX + c.accelerationY)
 	}
 
-
 	tango.Mailbox.Dispatch(CameraMessage{Axis: XAxis, Value: (c.ScrollSpeed * c.scrollX * dt) / c.divider, Incremental: true})
 	tango.Mailbox.Dispatch(CameraMessage{Axis: YAxis, Value: (c.ScrollSpeed * c.scrollY * dt) / c.divider, Incremental: true})
 }
@@ -587,9 +582,9 @@ func (c *EdgeScroller) SetMargins(top, right, bottom, left float32) {
 
 // MouseZoomer is a System that allows for zooming when the scroll wheel is used.
 type MouseZoomer struct {
-	ZoomSpeed float32
-	Steps     []float32
-	Duration  time.Duration
+	ZoomSpeed    float32
+	ZoomDuration time.Duration
+	Steps
 
 	camera *CameraSystem
 }
@@ -617,28 +612,22 @@ func (*MouseZoomer) Remove(ecs.BasicEntity) {}
 
 // Update zooms the camera in and out based on the movement of the scroll wheel.
 func (c *MouseZoomer) Update(float32) {
-	scroll := math32.Clamp(tango.Input.Mouse.ScrollY, -1, 1) * c.ZoomSpeed
+	scroll := tango.Input.Mouse.ScrollY * c.ZoomSpeed
 	if scroll == 0 {
 		return
 	}
 
-	for i, step := range c.Steps {
-		if step != c.camera.Z() {
-			continue
-		}
-
-		switch {
-		case scroll > 0 && len(c.Steps) > i+1:
-			scroll = c.Steps[i+1]
-		case scroll < 0 && i >= 1:
-			scroll = c.Steps[i-1]
-		default:
+	// if Duration != 0 the c.camera.Z() might be outside of the range of ZoomSteps, so we need to ignore
+	if c.IsStepped() {
+		value, found := c.Steps.Get(c.camera.Z(), scroll > 0)
+		if !found {
 			return
 		}
-		break
+
+		scroll = value
 	}
 
-	tango.Mailbox.Dispatch(CameraMessage{Axis: ZAxis, Value: scroll, Duration: c.Duration, Incremental: c.Steps == nil})
+	tango.Mailbox.Dispatch(CameraMessage{Axis: ZAxis, Value: scroll, Duration: c.ZoomDuration, Incremental: !c.IsStepped()})
 }
 
 // MouseRotator is a System that allows for rotating the camera based on pressing
@@ -674,4 +663,57 @@ func (c *MouseRotator) Update(float32) {
 	}
 
 	c.oldX = tango.Input.Mouse.X
+}
+
+type Steps struct {
+	sync.Mutex
+	steps    []float32
+	infinite bool
+}
+
+// SetSteps set the steps slice, it must be ordered
+func (s *Steps) SetSteps(steps []float32) {
+	// TODO Reorder? e.g if {3, 2, 1} change to {1, 2, 3} ?!
+	s.Lock()
+	s.steps = steps
+	s.Unlock()
+}
+
+// SetInifite if true it will return to steps[0] when reach the maximum steps[len(steps)-1]
+func (s *Steps) SetInfinite(infinite bool) {
+	s.infinite = infinite
+}
+
+// IsStepped returns true if there's any steps in use
+func (s *Steps) IsStepped() bool {
+	return s.steps != nil
+}
+
+// Get will returnt the next value (if up is true) or the previous value (if up is false) based on the current.
+func (s *Steps) Get(current float32, up bool) (value float32, found bool) {
+	s.Lock()
+
+	l := len(s.steps)
+	for index, step := range s.steps {
+		if step != current {
+			continue
+		}
+
+		switch {
+		case up && l > index+1:
+			value, found = s.steps[index+1], true
+		case up && s.infinite && l >= index+1:
+			value, found = s.steps[0], true
+		case !up && index >= 1:
+			value, found = s.steps[index-1], true
+		case !up && s.infinite && index <= 1:
+			value, found = s.steps[l-1], true
+		}
+
+		break
+	}
+
+	s.Unlock()
+
+	return value, found
 }
