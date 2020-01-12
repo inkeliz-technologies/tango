@@ -25,6 +25,9 @@ const (
 	// KeyboardRotatorPriority is the priority for the KeyboardRotatorSystem.
 	// Priorities determine the order in which the system is updated.
 	KeyboardRotatorPriority
+	// KeyboardZoomerPriority is the priority for the KeyboardZoomerSystem.
+	// Priorities determine the order in which the system is updated.
+	KeyboardZoomerPriority
 	// EntityScrollerPriority is the priority for the EntityScrollerSystem.
 	// Priorities determine the order in which the system is updated.
 	EntityScrollerPriority
@@ -200,26 +203,6 @@ func (cam *CameraSystem) Angle() float32 {
 	return cam.angle
 }
 
-func (cam *CameraSystem) moveX(value float32) {
-	if cam.x+(value*tango.GetGlobalScale().X) > CameraBounds.Max.X*tango.GetGlobalScale().X {
-		cam.x = CameraBounds.Max.X * tango.GetGlobalScale().X
-	} else if cam.x+(value*tango.GetGlobalScale().X) < CameraBounds.Min.X*tango.GetGlobalScale().X {
-		cam.x = CameraBounds.Min.X * tango.GetGlobalScale().X
-	} else {
-		cam.x += value * tango.GetGlobalScale().X
-	}
-}
-
-func (cam *CameraSystem) moveY(value float32) {
-	if cam.y+(value*tango.GetGlobalScale().Y) > CameraBounds.Max.Y*tango.GetGlobalScale().Y {
-		cam.y = CameraBounds.Max.Y * tango.GetGlobalScale().Y
-	} else if cam.y+(value*tango.GetGlobalScale().Y) < CameraBounds.Min.Y*tango.GetGlobalScale().Y {
-		cam.y = CameraBounds.Min.Y * tango.GetGlobalScale().Y
-	} else {
-		cam.y += value * tango.GetGlobalScale().Y
-	}
-}
-
 func (cam *CameraSystem) moveAxis(axis CameraAxis, value float32) {
 	switch axis {
 	case XAxis:
@@ -243,6 +226,26 @@ func (cam *CameraSystem) moveAxisTo(axis CameraAxis, value float32) {
 		cam.zoomTo(value)
 	case Angle:
 		cam.rotateTo(value)
+	}
+}
+
+func (cam *CameraSystem) moveX(value float32) {
+	if cam.x+(value*tango.GetGlobalScale().X) > CameraBounds.Max.X*tango.GetGlobalScale().X {
+		cam.x = CameraBounds.Max.X * tango.GetGlobalScale().X
+	} else if cam.x+(value*tango.GetGlobalScale().X) < CameraBounds.Min.X*tango.GetGlobalScale().X {
+		cam.x = CameraBounds.Min.X * tango.GetGlobalScale().X
+	} else {
+		cam.x += value * tango.GetGlobalScale().X
+	}
+}
+
+func (cam *CameraSystem) moveY(value float32) {
+	if cam.y+(value*tango.GetGlobalScale().Y) > CameraBounds.Max.Y*tango.GetGlobalScale().Y {
+		cam.y = CameraBounds.Max.Y * tango.GetGlobalScale().Y
+	} else if cam.y+(value*tango.GetGlobalScale().Y) < CameraBounds.Min.Y*tango.GetGlobalScale().Y {
+		cam.y = CameraBounds.Min.Y * tango.GetGlobalScale().Y
+	} else {
+		cam.y += value * tango.GetGlobalScale().Y
 	}
 }
 
@@ -484,7 +487,7 @@ func (c *KeyboardZoomer) New(w *ecs.World) {
 }
 
 // Priority implements the ecs.Prioritizer interface.
-func (*KeyboardZoomer) Priority() int { return MouseZoomerPriority }
+func (*KeyboardZoomer) Priority() int { return KeyboardZoomerPriority }
 
 // Remove does nothing because KeyboardZoomer has no entities. This implements the
 // ecs.System interface.
