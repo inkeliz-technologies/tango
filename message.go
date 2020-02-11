@@ -63,7 +63,17 @@ func (mm *MessageManager) Dispatch(message Message) {
 }
 
 // Listen subscribes to the specified message type and calls the specified handler when fired
+// Deprecated: should use `ListenMessage()` instead
 func (mm *MessageManager) Listen(messageType string, handler MessageHandler) MessageHandlerId {
+	return mm.listen(messageType, handler)
+}
+
+// ListenMessage subscribes to the specified message and calls the specified handler when fired
+func (mm *MessageManager) ListenMessage(msg Message, handler MessageHandler) MessageHandlerId {
+	return mm.listen(msg.Type(), handler)
+}
+
+func (mm *MessageManager) listen(messageType string, handler MessageHandler) MessageHandlerId {
 	mm.Lock()
 	defer mm.Unlock()
 	if mm.listeners == nil {
@@ -76,7 +86,17 @@ func (mm *MessageManager) Listen(messageType string, handler MessageHandler) Mes
 }
 
 // ListenOnce is a convenience wrapper around StopListen() to only listen to a specified message once
+// Deprecated: should use `ListenMessageOnce()` instead
 func (mm *MessageManager) ListenOnce(messageType string, handler MessageHandler) {
+	mm.listenOnce(messageType, handler)
+}
+
+// ListenMessageOnce is a convenience wrapper around StopListen() to only listen to a specified message once
+func (mm *MessageManager) ListenMessageOnce(msg Message, handler MessageHandler) {
+	mm.listenOnce(msg.Type(), handler)
+}
+
+func (mm *MessageManager) listenOnce(messageType string, handler MessageHandler) {
 	handlerID := MessageHandlerId(0)
 	handlerID = mm.Listen(messageType, func(msg Message) {
 		handler(msg)
@@ -85,7 +105,18 @@ func (mm *MessageManager) ListenOnce(messageType string, handler MessageHandler)
 }
 
 // StopListen removes a previously added handler from the listener queue
+// Deprecated: should use `StopListenMessage()` instead
 func (mm *MessageManager) StopListen(messageType string, handlerID MessageHandlerId) {
+	mm.stopListen(messageType, handlerID)
+}
+
+// StopListen removes a previously added handler from the listener queue
+func (mm *MessageManager) StopListenMessage(msg Message, handlerID MessageHandlerId) {
+	mm.stopListen(msg.Type(), handlerID)
+}
+
+// StopListen removes a previously added handler from the listener queue
+func (mm *MessageManager) stopListen(messageType string, handlerID MessageHandlerId) {
 	if mm.handlersToRemove == nil {
 		mm.handlersToRemove = make(map[string][]MessageHandlerId)
 	}
