@@ -4,7 +4,6 @@ import (
 	"github.com/inkeliz-technologies/ecs"
 	"github.com/inkeliz-technologies/tango"
 	"github.com/inkeliz-technologies/tango/math32"
-	"log"
 	"sync"
 	"time"
 )
@@ -89,20 +88,25 @@ func (cam *CameraSystem) New(w *ecs.World) {
 
 	cam.longTasks = make(map[CameraAxis]*CameraMessage)
 
-	tango.Mailbox.Listen("CameraMessage", func(msg tango.Message) {
+	tango.Mailbox.ListenMessage(new(CameraMessage), func(msg tango.Message) {
 		cammsg, ok := msg.(CameraMessage)
 		if !ok {
 			return
 		}
 
+		if cammsg.Duration > time.Duration(0) {
+			currentmsg, ok := cam.longTasks[cammsg.Axis]
+			if ok && cammsg.Continue && !currentmsg.Incremental {
+				cammsg.Duration = time.Duration((currentmsg.initialValue - cam.getAxis(cammsg.Axis)) / currentmsg.speed)
+			}
+
+			cam.longTasks[cammsg.Axis] = &cammsg
+			return // because it's handled incrementally
+		}
+
 		// Stop with whatever we're doing now
 		if _, ok := cam.longTasks[cammsg.Axis]; ok {
 			delete(cam.longTasks, cammsg.Axis)
-		}
-
-		if cammsg.Duration > time.Duration(0) {
-			cam.longTasks[cammsg.Axis] = &cammsg
-			return // because it's handled incrementally
 		}
 
 		if cammsg.Incremental {
@@ -123,19 +127,11 @@ func (cam *CameraSystem) Remove(ecs.BasicEntity) {}
 func (cam *CameraSystem) Update(dt float32) {
 	for axis, longTask := range cam.longTasks {
 		if !longTask.Incremental {
-			longTask.Incremental = true
-			longTask.value = longTask.Value
+			longTask.initialIncremental = false
+			longTask.initialValue = longTask.Value
 
-			switch axis {
-			case XAxis:
-				longTask.Value -= cam.x
-			case YAxis:
-				longTask.Value -= cam.y
-			case ZAxis:
-				longTask.Value -= cam.z
-			case Angle:
-				longTask.Value -= cam.angle
-			}
+			longTask.Incremental = true
+			longTask.Value -= cam.getAxis(axis)
 		}
 
 		// Set speed if needed
@@ -149,8 +145,8 @@ func (cam *CameraSystem) Update(dt float32) {
 		if longTask.Duration <= time.Duration(0) {
 
 			// it enforces that the last call will have the exactly position set by `Value` when `incremental = false`.
-			if longTask.value != 0 {
-				cam.moveAxisTo(axis, longTask.value)
+			if !longTask.initialIncremental {
+				cam.moveAxisTo(axis, longTask.initialValue)
 			}
 
 			delete(cam.longTasks, axis)
@@ -162,7 +158,7 @@ func (cam *CameraSystem) Update(dt float32) {
 	}
 
 	if cam.tracking.SpaceComponent == nil {
-		log.Println("Should be tracking", cam.tracking.BasicEntity.ID(), "but SpaceComponent is nil")
+		warning("Should be tracking %d but SpaceComponent is nil", cam.tracking.BasicEntity.ID())
 		cam.tracking.BasicEntity = nil
 		return
 	}
@@ -201,6 +197,21 @@ func (cam *CameraSystem) Z() float32 {
 // Angle returns the angle (in degrees) at which the Camera is rotated.
 func (cam *CameraSystem) Angle() float32 {
 	return cam.angle
+}
+
+func (cam *CameraSystem) getAxis(axis CameraAxis) float32 {
+	switch axis {
+	case XAxis:
+		return cam.x
+	case YAxis:
+		return cam.y
+	case ZAxis:
+		return cam.z
+	case Angle:
+		return cam.angle
+	default:
+		return 0
+	}
 }
 
 func (cam *CameraSystem) moveAxis(axis CameraAxis, value float32) {
@@ -296,11 +307,14 @@ const (
 // CameraMessage is a message that can be sent to the Camera (and other Systemers),
 // to indicate movement.
 type CameraMessage struct {
-	Axis         CameraAxis
-	Value        float32
-	Incremental  bool
-	Duration     time.Duration
-	value, speed float32
+	Axis        CameraAxis
+	Value       float32
+	Incremental bool
+	Duration    time.Duration
+	Continue    bool
+
+	initialValue, speed float32
+	initialIncremental  bool
 }
 
 // Type implements the tango.Message interface.
@@ -432,7 +446,23 @@ func (c *KeyboardRotator) Update(dt float32) {
 	rotation *= c.RotationSpeed
 
 	if c.IsStepped() {
-		value, found := c.Steps.Get(c.camera.Angle(), rotation < 0)
+		var found bool
+		var value float32
+
+		if c.camera.Angle() < 0 || (c.camera.Angle() == 0 && rotation > 0) {
+			value, found = c.Steps.Get(math32.Abs(c.camera.Angle()), rotation > 0)
+		} else {
+			value, found = c.Steps.Get(math32.Abs(c.camera.Angle()), rotation < 0)
+		}
+
+		if value == 0 && math32.Abs(c.camera.Angle()) >= 180 {
+			value = 360
+		}
+
+		if c.camera.Angle() < 0 || (c.camera.Angle() == 0 && rotation > 0) {
+			value *= -1
+		}
+
 		if !found {
 			return
 		}
@@ -483,7 +513,9 @@ func (c *KeyboardZoomer) New(w *ecs.World) {
 		warning("missing camera system in the world")
 	}
 
-	c.SetInfinite(true)
+	if c.ZoomInKey == "" || c.ZoomOutKey == "" {
+		c.SetInfinite(true)
+	}
 }
 
 // Priority implements the ecs.Prioritizer interface.
@@ -525,9 +557,13 @@ func (c *KeyboardZoomer) Update(float32) {
 func (c *KeyboardZoomer) BindKeyboard(zoomInKey, zoomOutKey string) {
 	c.ZoomInKey = zoomInKey
 	c.ZoomOutKey = zoomOutKey
+
+	if c.ZoomInKey == "" || c.ZoomOutKey == "" {
+		c.SetInfinite(true)
+	}
 }
 
-// KeyboardRotator creates a new KeyboardRotator system
+// KeyboardZoomer creates a new KeyboardZoomer system
 func NewKeyboardZoomer(zoomSpeed float32, zoomInKey, zoomOutKey string, disableHolding bool) *KeyboardZoomer {
 	return &KeyboardZoomer{
 		ZoomSpeed:       zoomSpeed,
