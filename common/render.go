@@ -222,7 +222,7 @@ func (rs *RenderSystem) New(w *ecs.World) {
 	rs.world = w
 	rs.ids = make(map[uint64]struct{})
 
-	tango.Mailbox.Listen("NewCameraMessage", func(tango.Message) {
+	tango.Mailbox.ListenMessage(new(NewCameraMessage), func(tango.Message) {
 		rs.newCamera = true
 	})
 
@@ -235,7 +235,7 @@ func (rs *RenderSystem) New(w *ecs.World) {
 		tango.Gl.Enable(tango.Gl.MULTISAMPLE)
 	}
 
-	tango.Mailbox.Listen("renderChangeMessage", func(tango.Message) {
+	tango.Mailbox.ListenMessage(new(renderChangeMessage), func(tango.Message) {
 		rs.sortingNeeded = true
 	})
 }

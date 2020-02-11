@@ -98,7 +98,7 @@ func (mm *MessageManager) ListenMessageOnce(msg Message, handler MessageHandler)
 
 func (mm *MessageManager) listenOnce(messageType string, handler MessageHandler) {
 	handlerID := MessageHandlerId(0)
-	handlerID = mm.Listen(messageType, func(msg Message) {
+	handlerID = mm.listen(messageType, func(msg Message) {
 		handler(msg)
 		mm.StopListen(messageType, handlerID)
 	})
@@ -110,12 +110,11 @@ func (mm *MessageManager) StopListen(messageType string, handlerID MessageHandle
 	mm.stopListen(messageType, handlerID)
 }
 
-// StopListen removes a previously added handler from the listener queue
+// StopListenMessage removes a previously added handler from the listener queue
 func (mm *MessageManager) StopListenMessage(msg Message, handlerID MessageHandlerId) {
 	mm.stopListen(msg.Type(), handlerID)
 }
 
-// StopListen removes a previously added handler from the listener queue
 func (mm *MessageManager) stopListen(messageType string, handlerID MessageHandlerId) {
 	if mm.handlersToRemove == nil {
 		mm.handlersToRemove = make(map[string][]MessageHandlerId)
